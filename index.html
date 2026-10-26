@@ -688,8 +688,8 @@ async function saveTagUpload(){
   questionBank.push(...records);const previous=await readLocalQuestionBank();const ids=new Set(records.map(r=>r.id));const persisted=await saveLocalQuestionBank([...previous.filter(q=>!ids.has(String(q.id||''))),...records]);
   const savedIds=records.map(r=>r.id),left=tagDropSaved(savedIds);tagState.saved=savedIds;$('tagZip').hidden=false;
   tagStatus(left?`Đã lưu ${records.length} câu. Còn ${tagState.parsed.length} câu cần sửa bên dưới.`:`Đã lưu ${records.length} câu. Khung đã trống, có thể nhập lô mới.`,'success');
-  toanaiDone('Đã cập nhật bài tập thành công',`<p>Đã lưu <b>${records.length} câu</b> vào ngân hàng bài tập${persisted?'':' (chưa lưu được qua lần tải lại trang)'}:</p><p class="done-ids">${records.map(r=>`<button class="linkbtn" type="button" onclick="document.getElementById('toanaiDone')?.remove();closeUploadModal();openExerciseDocument('${r.id}')">${r.id}</button>`).join(' ')}</p><p class="small muted">${left?`Các câu đã lưu được gỡ khỏi khung cập nhật. Còn ${tagState.parsed.length} câu chưa lưu để thầy cô sửa tiếp.`:'Các câu đã lưu được gỡ khỏi khung cập nhật.'} <b>Bài mới hiện mới chỉ nằm trên máy này:</b> bấm “☁ Đăng cho học sinh” để học sinh làm được bài.</p>`,
-    [['☁ Đăng cho học sinh','publishToGitHub()',1],['Nhập bài tiếp',''],['Đóng khung cập nhật','closeUploadModal()']])}
+  toanaiDone('Đã cập nhật bài tập thành công',`<p>Đã lưu <b>${records.length} câu</b> vào ngân hàng bài tập${persisted?'':' (chưa lưu được qua lần tải lại trang)'}:</p><p class="done-ids">${records.map(r=>`<button class="linkbtn" type="button" onclick="document.getElementById('toanaiDone')?.remove();closeUploadModal();openExerciseDocument('${r.id}')">${r.id}</button>`).join(' ')}</p><p class="small muted">${left?`Các câu đã lưu được gỡ khỏi khung cập nhật. Còn ${tagState.parsed.length} câu chưa lưu để thầy cô sửa tiếp.`:'Các câu đã lưu được gỡ khỏi khung cập nhật.'} ${typeof sbOn==='function'&&sbOn()?'<b>Bài đang được tự động đăng cho học sinh</b> (xem thông báo ở cuối màn hình).':'<b>Bài mới hiện mới chỉ nằm trên máy này:</b> bấm “☁ Đăng cho học sinh” để học sinh làm được bài.'}</p>`,
+    [[typeof sbOn==='function'&&sbOn()?'☁ Kiểm tra đã đăng':'☁ Đăng cho học sinh','publishToGitHub()',1],['Nhập bài tiếp',''],['Đóng khung cập nhật','closeUploadModal()']])}
 $('tagClass').addEventListener('change',fillTagChapters);
 /* nhận một lúc nhiều file: Word/.txt nối vào ô đề; ảnh và file HTML được nhớ theo tên để gắn vào câu */
 /* ===== đọc file bài tập HTML (theo mẫu Toán AI): đổi thành văn bản thẻ để kiểm tra như file Word ===== */
@@ -2028,8 +2028,8 @@ function exuSave(skipBad){
   const all=readCustomExams();all.unshift(exam);const ok=writeCustomExams(all);
   if(!ok){exu.msg='Không lưu được: đề quá lớn so với bộ nhớ của trình duyệt (thường do nhiều hình lớn). Hãy giảm kích thước hình trong file rồi tải lại.';exu.msgTone='bad';exuRender();return}
   const skipped=exu.parsed.length-list.length,shared=typeof comShare==='function';exu=exuNew();render();window.scrollTo({top:0});
-  toanaiDone('Đã cập nhật đề thành công',`<p><b>“${esc(exam.title)}”</b></p><p>Mã đề <b>${exam.code}</b> · ${esc(examCodeLabel(exam.code))}</p><p>${qs.length} câu (${counts.map(p=>p[1]+' '+p[0].toLowerCase()).join(', ')}), ${exam.minutes} phút.${skipped?` Bỏ qua ${skipped} câu còn lỗi.`:''}</p><p class="small muted">Khung Tải đề lên đã được làm trống để thầy cô tải đề tiếp theo. <b>Đề mới hiện mới chỉ nằm trên máy này:</b> bấm “☁ Đăng cho học sinh” để học sinh làm được đề.</p>`,
-    [['☁ Đăng cho học sinh','publishToGitHub()',1],['Làm thử ngay',`openExamTake('${exam.code}')`],['Xem trong Thư viện',`exu=null;examView.cat='all';examView.q='';go('exams')`],...(shared?[['🌐 Chia sẻ với cộng đồng',`comShare('${exam.code}')`]]:[]),['Tải đề khác','']])}
+  toanaiDone('Đã cập nhật đề thành công',`<p><b>“${esc(exam.title)}”</b></p><p>Mã đề <b>${exam.code}</b> · ${esc(examCodeLabel(exam.code))}</p><p>${qs.length} câu (${counts.map(p=>p[1]+' '+p[0].toLowerCase()).join(', ')}), ${exam.minutes} phút.${skipped?` Bỏ qua ${skipped} câu còn lỗi.`:''}</p><p class="small muted">Khung Tải đề lên đã được làm trống để thầy cô tải đề tiếp theo. ${typeof sbOn==='function'&&sbOn()?'<b>Đề đang được tự động đăng cho học sinh</b> (xem thông báo ở cuối màn hình).':'<b>Đề mới hiện mới chỉ nằm trên máy này:</b> bấm “☁ Đăng cho học sinh” để học sinh làm được đề.'}</p>`,
+    [[typeof sbOn==='function'&&sbOn()?'☁ Kiểm tra đã đăng':'☁ Đăng cho học sinh','publishToGitHub()',1],['Làm thử ngay',`openExamTake('${exam.code}')`],['Xem trong Thư viện',`exu=null;examView.cat='all';examView.q='';go('exams')`],...(shared?[['🌐 Chia sẻ với cộng đồng',`comShare('${exam.code}')`]]:[]),['Tải đề khác','']])}
 
 /* ===== Sửa trực tiếp trước khi tải lên: mở khung sửa ngay dưới câu bị lỗi, áp dụng là đọc lại và xem trước ngay ===== */
 function ueRange(text,i){const lines=String(text||'').replace(/\r\n?/g,'\n').split('\n');const starts=[];lines.forEach((l,k)=>{if(readCauLine(l))starts.push(k)});
@@ -2884,7 +2884,7 @@ function stSaveContact(){const user=stVal('stUser').toLowerCase(),phone=stVal('s
   if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return stMsg('stContactMsg','Email chưa đúng dạng.',true);
   accSaveProfile({username:user,phone,email});render();stMsg('stContactMsg','✓ Đã lưu.')}
 function stBackup(){const data={kind:'toanai-backup',v:1,exported:new Date().toISOString(),items:{}};
-  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!/^toanai/.test(k)||/^toanai-(users|session|gh)/.test(k))continue;let v=localStorage.getItem(k);if(k===ACC_PROFILE){try{const o=JSON.parse(v);delete o.key;delete o.pwHash;delete o.pwSalt;v=JSON.stringify(o)}catch{}}data.items[k]=v}
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!/^toanai/.test(k)||/^toanai-(users|session|gh|sb)/.test(k))continue;let v=localStorage.getItem(k);if(k===ACC_PROFILE){try{const o=JSON.parse(v);delete o.key;delete o.pwHash;delete o.pwSalt;v=JSON.stringify(o)}catch{}}data.items[k]=v}
   const u=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'})),l=document.createElement('a');l.href=u;l.download='toan-ai-sao-luu-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),2000)}
 async function stRestore(f){if(!f)return;try{const d=JSON.parse(await f.text());if(d.kind!=='toanai-backup'||!d.items)throw 0;if(!confirm('Khôi phục dữ liệu từ file sao lưu ngày '+String(d.exported||'').slice(0,10)+'? Dữ liệu hiện tại trên máy này sẽ được thay thế.'))return;
   const keep=accProfile();Object.entries(d.items).forEach(([k,v])=>{if(/^toanai/.test(k)&&typeof v==='string')localStorage.setItem(k,v)});accSaveProfile({key:keep.key,pwHash:keep.pwHash,pwSalt:keep.pwSalt});
@@ -3537,13 +3537,13 @@ function auTab(t){auView.email=auVal('auEmail')||auView.email;auView.tab=t;auVie
 function auRole(r){auView.role=r;const c=$('auCodeRow');if(c)c.hidden=r!=='teacher'}
 function auRender(){const m=$('authModal');if(!m)return;const u=auUser(),v=auView,msg=`<p class="au-msg ${v.tone}" id="auMsg" role="status">${esc(v.msg)}</p>`;let h;
   if(u){const gv=u.role==='teacher';h=`<h2>Xin chào, ${esc(u.name||u.email)}</h2><p class="au-sub">${esc(u.email)}</p><p><span class="au-badge ${gv?'gv':'hs'}">${gv?'Giáo viên':'Học sinh'}</span></p><p class="au-note">${gv?'Bạn có thêm: ＋ Cập nhật Bài tập, ⬆ Tải đề lên, sửa/xóa bài và đề, công thức cốt lõi, Lớp của tôi, xuất index.html.':'Bạn đọc bài, làm bài tập và làm đề thi. Việc đăng bài, đăng đề dành cho giáo viên.'}</p><form class="au-form au-switch" onsubmit="event.preventDefault();auSwitchRole()"><b>Đổi vai trò</b>${gv?'<p class="au-note">Chuyển về Học sinh để xem web như học sinh. Muốn quay lại Giáo viên sẽ phải nhập lại mã.</p><button class="btn" type="submit">Chuyển về Học sinh</button>':'<label>Mã giáo viên<input id="auCode" type="password" autocomplete="off" placeholder="Do chủ web cung cấp"></label><button class="btn" type="submit">Chuyển sang Giáo viên</button>'}</form>${msg}<div class="au-row"><button class="btn primary" type="button" onclick="auClose()">Đóng</button><button class="btn" type="button" onclick="auLogout()">Đăng xuất</button></div>`}
-  else{const reg=v.tab==='reg',cid=AU_GOOGLE_CLIENT_ID;
+  else{const reg=v.tab==='reg',cid=AU_GOOGLE_CLIENT_ID||(window.__TOANAI_SB&&window.__TOANAI_SB.google&&window.__TOANAI_SB.url?'sb':'');
     h=`<div class="au-tabs" role="tablist"><button type="button" role="tab" aria-selected="${!reg}" onclick="auTab('login')">Đăng nhập</button><button type="button" role="tab" aria-selected="${reg}" onclick="auTab('reg')">Đăng ký</button></div>
 <form class="au-form" onsubmit="event.preventDefault();${reg?'auRegister()':'auLogin()'}">
 ${reg?'<label>Họ và tên<input id="auName" autocomplete="name" required></label>':''}<label>Gmail<input id="auEmail" type="email" autocomplete="email" placeholder="ten@gmail.com" value="${esc(v.email)}" required></label>
 <label>Mật khẩu<input id="auPw" type="password" autocomplete="${reg?'new-password':'current-password'}" minlength="6" required></label>
 ${reg?`<label>Nhập lại mật khẩu<input id="auPw2" type="password" autocomplete="new-password" required></label><fieldset class="au-roles"><legend>Bạn là</legend><label><input type="radio" name="auRole" value="student" ${v.role==='student'?'checked':''} onchange="auRole(this.value)"> Học sinh</label><label><input type="radio" name="auRole" value="teacher" ${v.role==='teacher'?'checked':''} onchange="auRole(this.value)"> Giáo viên</label></fieldset><label id="auCodeRow" ${v.role==='teacher'?'':'hidden'}>Mã giáo viên<input id="auCode" type="password" autocomplete="off" placeholder="Do chủ web cung cấp"></label>`:''}
-${msg}<button class="btn primary au-go" type="submit">${reg?'Tạo tài khoản':'Đăng nhập'}</button></form>
+${msg}<button class="btn primary au-go" type="submit">${reg?'Tạo tài khoản':'Đăng nhập'}</button></form>${!reg&&window.__TOANAI_SB&&window.__TOANAI_SB.url?'<p class="au-note"><button type="button" class="linkbtn" onclick="sbForgot()">Quên mật khẩu?</button></p>':''}
 ${cid?'<div class="au-or"><span>hoặc</span></div><div id="auGBtn" class="au-gbtn"></div>':''}`}
   m.innerHTML=`<section class="au-dlg" role="dialog" aria-modal="true" aria-label="Tài khoản"><button class="au-x" type="button" aria-label="Đóng" onclick="auClose()">✕</button>${h}</section>`;
   if(!u&&$('auGBtn'))auGoogleButton()}
@@ -3590,4 +3590,180 @@ function auDeny(){const u=auUser();auOpen(u?'me':'login','Chức năng này dàn
 ['publishToGitHub','openUploadModal','addUploadedExercise','saveTagUpload','downloadPublishIndex','deleteQuestion','editQuestionId','exuSave','exmDelete','exmRename','exmRecode','fmSave','fmImportMany','fmDel','fmSaveIllus','fmDelIllus','clsImport'].forEach(n=>{const f=window[n];if(typeof f!=='function')return;window[n]=function(){if(!isTeacher()){auDeny();return}return f.apply(this,arguments)}});
 {const goBase=go;go=function(p){if(AU_TEACHER_PAGES.includes(p)&&!isTeacher()){auDeny();return}return goBase.apply(this,arguments)}}
 auApply();</script>
+<script id="toanai-sb-config">/* Cấu hình máy chủ Supabase.
+   Để trống = web chạy kiểu cũ (dữ liệu nằm trong trình duyệt, đăng bài qua GitHub).
+   Điền url và anon sau khi tạo dự án Supabase (xem supabase/HUONG-DAN.md).
+   "anon" là khóa CÔNG KHAI, được phép nằm trong file web (quyền ghi do cơ sở dữ liệu kiểm soát, không phải do khóa này).
+   TUYỆT ĐỐI không dán khóa "service_role" vào đây.
+   google:true chỉ bật sau khi đã cấu hình đăng nhập Google trong Supabase. */
+window.__TOANAI_SB=window.__TOANAI_SB||{url:'',anon:'',google:false};</script>
+<script id="toanai-sb">/* ===== Máy chủ Supabase: tài khoản thật, vai trò thật, bài và đề dùng chung =====
+   Khi cấu hình (du-lieu/cau-hinh-may-chu.js) có url + anon thì:
+   · đăng ký / đăng nhập / đổi vai trò chạy trên máy chủ (mã giáo viên được kiểm ở máy chủ, học sinh không vượt được);
+   · bài và đề giáo viên lưu xong được gửi lên máy chủ NGAY; học sinh mở web (hoặc đang mở thì tối đa ~45 giây sau) là thấy;
+   · bài/đề lấy từ máy chủ được đệm trong IndexedDB, chỉ tải phần mới đổi.
+   Chưa cấu hình thì file này không làm gì: web chạy kiểu cũ. Bảng và quyền: supabase/01-khoi-tao.sql. */
+const SBC=window.__TOANAI_SB||{};
+const SB_SESSION='toanai-sb-session-v1';
+function sbOn(){return !!(SBC.url&&SBC.anon)}
+if(sbOn()){
+const SB_URL=String(SBC.url).replace(/\/+$/,'');
+const sbQ=new Map(),sbE=new Map();let sbSig='',sbOnline=true,sbSyncing=false;
+
+/* ---- kho đệm trong trình duyệt (IndexedDB) ---- */
+function sbDb(){return new Promise((ok,no)=>{const r=indexedDB.open('toanai-sb-cache',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+async function sbKvGet(k){try{const db=await sbDb();return await new Promise((ok,no)=>{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>{db.close();ok(q.result)};q.onerror=()=>{db.close();no(q.error)}})}catch{return undefined}}
+async function sbKvSet(k,v){try{const db=await sbDb();await new Promise((ok,no)=>{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>{db.close();ok()};tx.onerror=()=>{db.close();no(tx.error)}})}catch{}}
+
+/* ---- gọi máy chủ và giữ phiên đăng nhập ---- */
+function sbSess(){try{return JSON.parse(localStorage.getItem(SB_SESSION)||'null')}catch{return null}}
+function sbSetSess(s){try{s?localStorage.setItem(SB_SESSION,JSON.stringify(s)):localStorage.removeItem(SB_SESSION)}catch{}}
+function sbMake(j,profile){return{access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600),user:{id:j.user&&j.user.id,email:j.user&&j.user.email},profile:profile||null}}
+async function sbToken(){let s=sbSess();if(!s)return null;
+  if(s.expires_at-Date.now()/1000<60){try{const r=await sbFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',auth:false,body:{refresh_token:s.refresh_token}});
+    if(r.ok){s=sbMake(await r.json(),s.profile);sbSetSess(s)}else if(r.status===400||r.status===401){sbSetSess(null);auApply();return null}}catch{}}
+  return s.access_token}
+async function sbFetch(path,o={}){const h={apikey:SBC.anon,'Content-Type':'application/json',...(o.headers||{})};
+  const t=o.auth===false?null:await sbToken();if(t)h.Authorization='Bearer '+t;else if(!/^sb_/.test(String(SBC.anon)))h.Authorization='Bearer '+SBC.anon; /* khóa kiểu mới sb_publishable_… chỉ gửi ở apikey */
+  return fetch(SB_URL+path,{method:o.method||'GET',headers:h,body:o.body===undefined?undefined:JSON.stringify(o.body)})}
+function sbRpc(name,args){return sbFetch('/rest/v1/rpc/'+name,{method:'POST',body:args||{}})}
+async function sbLoadProfile(){const s=sbSess();if(!s||!s.user)return;const r=await sbFetch('/rest/v1/profiles?select=email,full_name,role&id=eq.'+encodeURIComponent(s.user.id));if(!r.ok)return;const rows=await r.json();if(rows[0]){s.profile=rows[0];sbSetSess(s)}}
+async function sbErrMsg(r){let j={};try{j=await r.json()}catch{}return j.msg||j.message||j.error_description||j.error||('HTTP '+r.status)}
+function sbAuthErr(code,msg){const m=String(msg||'').toLowerCase();
+  if(/invalid login|invalid_credentials/.test(m))return 'Gmail hoặc mật khẩu chưa đúng.';if(/not confirmed/.test(m))return 'Gmail này chưa được xác nhận. Hãy mở thư xác nhận rồi đăng nhập lại.';
+  if(/already registered|already been registered|user_already_exists/.test(m))return 'Gmail này đã đăng ký. Hãy chuyển sang Đăng nhập.';if(/password/.test(m)&&/(least|short|weak)/.test(m))return 'Mật khẩu chưa đủ mạnh (tối thiểu 6 ký tự).';
+  if(/rate limit|too many/.test(m))return 'Bạn thử quá nhiều lần. Hãy chờ vài phút rồi thử lại.';return 'Máy chủ báo lỗi: '+msg}
+
+/* ---- tài khoản: thay các hàm đăng nhập của js/36 bằng bản chạy trên máy chủ ---- */
+auUser=function(){const s=sbSess();if(!s||!s.user)return null;const p=s.profile||{};return{email:s.user.email,name:p.full_name||s.user.email,role:p.role==='teacher'?'teacher':'student'}};
+auRegister=async function(){try{const name=auVal('auName'),em=auEmail(auVal('auEmail')),pw=($('auPw')||{}).value||'',pw2=($('auPw2')||{}).value||'',role=auView.role;
+  if(!name)return auMsg('Hãy nhập họ và tên.',1);if(em.err)return auMsg(em.err,1);if(pw.length<6)return auMsg('Mật khẩu cần ít nhất 6 ký tự.',1);if(pw!==pw2)return auMsg('Hai lần nhập mật khẩu chưa khớp.',1);
+  if(role==='teacher'&&!auVal('auCode'))return auMsg('Hãy nhập mã giáo viên (do chủ web cung cấp).',1);
+  auMsg('Đang tạo tài khoản…');
+  const r=await sbFetch('/auth/v1/signup',{method:'POST',auth:false,body:{email:em.v,password:pw,data:{full_name:name}}});
+  if(!r.ok)return auMsg(sbAuthErr(r.status,await sbErrMsg(r)),1);const j=await r.json().catch(()=>({}));
+  if(!j.access_token)return auMsg('Đã gửi thư xác nhận tới '+em.v+'. Hãy bấm liên kết trong thư rồi quay lại Đăng nhập.');
+  sbSetSess(sbMake(j,null));await sbLoadProfile();
+  if(role==='teacher'){const rr=await sbRpc('set_my_role',{p_role:'teacher',p_code:auVal('auCode')});
+    if(!rr.ok){auAfter();sbStart();return auMsg('Đã tạo tài khoản HỌC SINH, nhưng mã giáo viên chưa đúng. Bạn nhập lại mã ở Cài đặt → Hồ sơ cá nhân → Vai trò.',1)}await sbLoadProfile()}
+  auAfter();sbStart()}catch(e){auMsg('Không kết nối được máy chủ: '+String(e.message||e),1)}};
+auLogin=async function(){try{const em=auEmail(auVal('auEmail')),pw=($('auPw')||{}).value||'';if(em.err)return auMsg(em.err,1);
+  auMsg('Đang đăng nhập…');
+  const r=await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',auth:false,body:{email:em.v,password:pw}});
+  if(!r.ok)return auMsg(sbAuthErr(r.status,await sbErrMsg(r)),1);
+  sbSetSess(sbMake(await r.json(),null));await sbLoadProfile();auAfter();sbStart()}catch(e){auMsg('Không kết nối được máy chủ: '+String(e.message||e),1)}};
+auLogout=function(){const s=sbSess();if(s){sbFetch('/auth/v1/logout',{method:'POST'}).catch(()=>{})}sbSetSess(null);auApply();
+  if(AU_TEACHER_PAGES.includes(state.page))go('home');else if(typeof render==='function'&&state.page!=='examTake')render();auView.tab='login';auRender()};
+async function sbSetRole(role,code){const r=await sbRpc('set_my_role',{p_role:role,p_code:code||null});
+  if(!r.ok){const m=await sbErrMsg(r);return /Mã giáo viên/.test(m)?'Mã giáo viên chưa đúng. Hãy liên hệ chủ web để nhận mã.':'Không đổi được vai trò ('+m+').'}await sbLoadProfile();return ''}
+auSwitchRole=async function(){try{const u=auUser();if(!u)return;const to=u.role==='teacher'?'student':'teacher',err=await sbSetRole(to,to==='teacher'?auVal('auCode'):'');if(err)return auMsg(err,1);
+  if(to==='student'&&AU_TEACHER_PAGES.includes(state.page))go('home');auAfter();auMsg(to==='teacher'?'✓ Đã chuyển sang Giáo viên.':'✓ Đã chuyển về Học sinh.')}catch(e){auMsg(String(e.message||e),1)}};
+auGateRole=async function(role,code){const u=auUser(),wantT=role==='Giáo viên';
+  if(!u)return wantT?(auOpen('login','Hãy đăng nhập (hoặc đăng ký) trước khi chọn vai trò Giáo viên.'),'Hãy đăng nhập trước khi chọn vai trò Giáo viên.'):'';
+  if(wantT===(u.role==='teacher'))return '';if(wantT&&!String(code||'').trim())return 'Cần nhập đúng mã giáo viên để chuyển sang vai trò Giáo viên.';
+  const err=await sbSetRole(wantT?'teacher':'student',code);if(err)return err;if(!wantT&&AU_TEACHER_PAGES.includes(state.page))go('home');auApply();sbRefreshUi();return ''};
+/* đăng nhập Google qua Supabase (chuyển trang, quay về kèm mã trong địa chỉ) */
+auGoogleButton=function(){const b=$('auGBtn');if(b)b.innerHTML='<button class="btn au-g" type="button" onclick="sbGoogle()"><b>G</b> Tiếp tục với Google</button>'};
+window.sbGoogle=function(){location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+location.pathname)};
+async function sbOAuthReturn(){const h=location.hash||'';if(!/access_token=/.test(h))return;const p=new URLSearchParams(h.slice(1));history.replaceState(null,'',location.pathname+location.search);window.__SB_RECOVERY=p.get('type')==='recovery';
+  const at=p.get('access_token');if(!at)return;const r=await fetch(SB_URL+'/auth/v1/user',{headers:{apikey:SBC.anon,Authorization:'Bearer '+at}});if(!r.ok)return;const u=await r.json();
+  sbSetSess(sbMake({access_token:at,refresh_token:p.get('refresh_token'),expires_in:+p.get('expires_in')||3600,user:u}));await sbLoadProfile()}
+
+/* quên mật khẩu: gửi thư đặt lại; bấm liên kết trong thư thì quay về web và được hỏi mật khẩu mới */
+window.sbForgot=async function(){const typed=auVal('auEmail'),em=auEmail(typed||prompt('Nhập Gmail đã đăng ký để nhận thư đặt lại mật khẩu:','')||'');if(em.err)return auMsg(em.err,1);
+  try{const r=await sbFetch('/auth/v1/recover',{method:'POST',auth:false,body:{email:em.v}});auMsg(r.ok?'Đã gửi thư đặt lại mật khẩu tới '+em.v+' (nếu Gmail này đã đăng ký). Hãy mở thư và bấm liên kết.':sbAuthErr(r.status,await sbErrMsg(r)),!r.ok)}catch(e){auMsg('Không kết nối được máy chủ.',1)}};
+async function sbRecoveryAsk(){const np=prompt('Nhập mật khẩu MỚI của bạn (tối thiểu 6 ký tự):','');if(!np)return;
+  if(np.length<6){alert('Mật khẩu cần ít nhất 6 ký tự.');return}
+  const r=await sbFetch('/auth/v1/user',{method:'PUT',body:{password:np}});alert(r.ok?'Đã đổi mật khẩu. Lần sau hãy đăng nhập bằng mật khẩu mới.':'Không đổi được mật khẩu: '+await sbErrMsg(r))}
+/* ---- gửi bài và đề lên máy chủ ---- */
+async function sbUpsert(table,rows){const key=table==='questions'?'id':'code';let batch=[],size=0;
+  const flush=async()=>{if(!batch.length)return;const r=await sbFetch('/rest/v1/'+table+'?on_conflict='+key,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:batch});
+    if(!r.ok){const e=new Error(await sbErrMsg(r));e.status=r.status;throw e}batch=[];size=0};
+  for(const row of rows){const s=JSON.stringify(row).length;if(batch.length&&size+s>3e6)await flush();batch.push(row);size+=s}await flush()}
+async function sbSend(table,rows){const key=table==='questions'?'id':'code',map=table==='questions'?sbQ:sbE;
+  try{await sbUpsert(table,rows);const now=new Date().toISOString();rows.forEach(r=>map.set(String(r[key]),{...r,updated_at:now}));await sbKvSet(table==='questions'?'rows-q':'rows-e',[...map.values()]);sbSig='';if(await sbApply())sbRerender();return true}
+  catch(e){if(e.status===401||e.status===403){sbToast('Không đăng được: tài khoản này chưa có quyền giáo viên (hoặc đã hết phiên đăng nhập). '+e.message,'bad');return false}
+    const q=(await sbKvGet('queue'))||[];q.push({table,rows});await sbKvSet('queue',q);sbRefreshUi();return false}}
+async function sbFlush(){if(!sbSess())return;const q=(await sbKvGet('queue'))||[];if(!q.length)return;const left=[];
+  for(const it of q){try{await sbUpsert(it.table,it.rows);const map=it.table==='questions'?sbQ:sbE,key=it.table==='questions'?'id':'code',now=new Date().toISOString();it.rows.forEach(r=>map.set(String(r[key]),{...r,updated_at:now}))}catch(e){if(e.status===401||e.status===403)continue;left.push(it)}}
+  await sbKvSet('queue',left);await sbKvSet('rows-q',[...sbQ.values()]);await sbKvSet('rows-e',[...sbE.values()])}
+function sbToast(t,tone){if(typeof ghToast==='function')ghToast(t,tone)}
+function sbRecord(q){const d={...q};delete d._local_only;delete d._admin_key;return{id:String(q.id),data:d,deleted:false}}
+async function sbPushQuestions(list,what){const ok=await sbSend('questions',list.map(sbRecord));sbToast(ok?'✓ Đã đăng '+(what||list.length+' câu')+' cho học sinh. Học sinh thấy ngay khi mở web.':'Chưa gửi được lên máy chủ (mất mạng?). Bài vẫn được giữ trên máy bạn và sẽ tự gửi lại.',ok?'ok':'bad')}
+async function sbPushExams(list){const ok=await sbSend('exams',list.map(e=>{const d={...e};return{code:String(e.code),data:d,deleted:false}}));
+  if(ok){const codes=new Set(list.map(e=>String(e.code)));try{writeCustomExams(readCustomExams().filter(e=>!codes.has(String(e.code))))}catch{}}
+  sbToast(ok?'✓ Đã đăng đề cho học sinh. Học sinh thấy ngay khi mở web.':'Chưa gửi được lên máy chủ (mất mạng?). Đề vẫn được giữ trên máy bạn và sẽ tự gửi lại.',ok?'ok':'bad')}
+
+/* ---- lấy bài và đề từ máy chủ ---- */
+function sbSince(cur){const t=Date.parse(cur);return isNaN(t)?'1970-01-01T00:00:00Z':new Date(t-10000).toISOString()}
+async function sbPull(table,map,key,curKey){const cur=(await sbKvGet(curKey))||'1970-01-01T00:00:00Z';let max=cur,off=0,n=0;
+  for(;;){const r=await sbFetch('/rest/v1/'+table+'?select='+key+',data,deleted,updated_at&updated_at=gte.'+encodeURIComponent(sbSince(cur))+'&order=updated_at.asc,'+key+'.asc&limit=20&offset='+off);
+    if(!r.ok)throw new Error(table+': '+await sbErrMsg(r));const rows=await r.json();
+    for(const x of rows){const k=String(x[key]),o=map.get(k);if(!o||o.updated_at!==x.updated_at||o.deleted!==x.deleted)n++;map.set(k,x);if(String(x.updated_at)>max)max=String(x.updated_at)}
+    if(rows.length<20)break;off+=20}
+  if(max!==cur)await sbKvSet(curKey,max);return n}
+/* gộp dữ liệu máy chủ vào dữ liệu đang dùng; trả true nếu có thay đổi */
+async function sbApply(){const latest=m=>[...m.values()].reduce((a,r)=>String(r.updated_at)>a?String(r.updated_at):a,'');
+  const sig=sbQ.size+'|'+latest(sbQ)+'|'+sbE.size+'|'+latest(sbE);if(sig===sbSig)return false;sbSig=sig;
+  const base=window.__SB_FILE_Q||(window.__SB_FILE_Q=Array.isArray(window.__TOANAI_EMBEDDED_QUESTIONS)?window.__TOANAI_EMBEDDED_QUESTIONS.slice():[]);
+  const dead=new Set(),live=[];sbQ.forEach((r,id)=>{if(r.deleted)dead.add(id);else if(r.data&&typeof r.data==='object')live.push({...r.data,id})});
+  const liveIds=new Set(live.map(q=>String(q.id)));
+  window.__TOANAI_EMBEDDED_QUESTIONS=base.filter(q=>!dead.has(String(q.id||''))&&!liveIds.has(String(q.id||''))).concat(live);
+  for(let i=EXM_BASE.length-1;i>=0;i--)if(EXM_BASE[i].sb)EXM_BASE.splice(i,1);
+  const have=new Set(EXM_BASE.map(b=>b.orig)),exDead=new Set();
+  sbE.forEach((r,c)=>{if(r.deleted)exDead.add(c);else if(r.data&&typeof r.data==='object'&&!have.has(c))EXM_BASE.push({orig:c,code:c,title:r.data.title,e:{...r.data,code:c},sb:true})});
+  window.__SB_DEAD_EX=exDead;exmApply();
+  bankReady=loadQuestionBank();await bankReady;return true}
+const _exmEdits=exmEdits;exmEdits=function(){const o=_exmEdits();(window.__SB_DEAD_EX||new Set()).forEach(c=>{o[c]={...(o[c]||{}),deleted:true}});return o};
+function sbRerender(){const p=state.page,ae=document.activeElement,up=document.getElementById('uploadModal');
+  if(['solve','examTake','examBuilder','examUpload'].includes(p)||document.getElementById('toanai-exercise-frame')||(up&&!up.hidden)||(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)))return;
+  if(typeof render==='function')render()}
+async function sbSyncAll(){if(sbSyncing)return;sbSyncing=true;
+  try{await sbFlush();const a=await sbPull('questions',sbQ,'id','cur-q'),b=await sbPull('exams',sbE,'code','cur-e');
+    if(a||b){await sbKvSet('rows-q',[...sbQ.values()]);await sbKvSet('rows-e',[...sbE.values()]);if(await sbApply())sbRerender()}sbOnline=true}
+  catch(e){sbOnline=false}finally{sbSyncing=false;sbRefreshUi()}}
+async function sbBoot(){const q=await sbKvGet('rows-q'),e=await sbKvGet('rows-e');(q||[]).forEach(r=>sbQ.set(String(r.id),r));(e||[]).forEach(r=>sbE.set(String(r.code),r));
+  if(sbQ.size||sbE.size){if(typeof bankReady!=='undefined'&&bankReady)await bankReady;if(await sbApply())sbRerender()}await sbSyncAll()}
+let sbTimer=0;
+function sbStart(){if(sbTimer)return;sbTimer=setInterval(()=>{if(!document.hidden)sbSyncAll()},45000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)sbSyncAll()});window.addEventListener('online',sbSyncAll)}
+
+/* ---- việc của giáo viên: lưu xong là đăng ngay ---- */
+function sbWrap(name,make){const f=window[name];if(typeof f!=='function')return;window[name]=make(f)}
+['saveTagUpload','addUploadedExercise'].forEach(n=>sbWrap(n,f=>async function(){if(bankReady)await bankReady;const before=new Set(questionBank.map(q=>String(q.id||'')));
+  const r=await f.apply(this,arguments);const add=questionBank.filter(q=>!before.has(String(q.id||'')));if(add.length&&isTeacher())sbPushQuestions(add);return r}));
+sbWrap('exuSave',f=>function(){const before=new Set(readCustomExams().map(e=>String(e.code)));const r=f.apply(this,arguments);
+  const add=readCustomExams().filter(e=>!before.has(String(e.code)));if(add.length&&isTeacher())sbPushExams(add);return r});
+sbWrap('deleteQuestion',f=>function(key){const rec=typeof findQuestionByAdminKey==='function'?findQuestionByAdminKey(key):null,id=rec&&String(rec.id||'');const r=f.apply(this,arguments);
+  if(id&&!questionBank.includes(rec)&&isTeacher())sbSend('questions',[{id,data:{},deleted:true}]).then(ok=>sbToast(ok?'✓ Đã gỡ bài '+id+' khỏi web của học sinh.':'Chưa gửi được lệnh xóa lên máy chủ; sẽ tự gửi lại.',ok?'ok':'bad'));return r});
+sbWrap('editQuestionId',f=>function(key){const rec=typeof findQuestionByAdminKey==='function'?findQuestionByAdminKey(key):null,old=rec&&String(rec.id||'');const r=f.apply(this,arguments);
+  if(rec&&String(rec.id||'')!==old&&isTeacher())sbSend('questions',[sbRecord(rec),{id:old,data:{},deleted:true}]).then(ok=>sbToast(ok?'✓ Đã đổi ID bài trên máy chủ.':'Chưa gửi được lên máy chủ; sẽ tự gửi lại.',ok?'ok':'bad'));return r});
+sbWrap('exmSetLib',f=>function(orig,patch){const b=EXM_BASE.find(x=>x.orig===orig);
+  if(b&&patch&&patch.code&&isTeacher()){alert('Đề dùng chung trên máy chủ chưa hỗ trợ đổi mã đề. Hãy giữ nguyên mã, hoặc xóa đề rồi tải lại với mã mới.');return}
+  const r=f.apply(this,arguments);
+  if(b&&isTeacher()&&patch&&(patch.deleted||patch.title)){const e={...b.e};delete e._orig;if(patch.title)e.title=patch.title;e.code=orig;
+    sbSend('exams',[{code:orig,data:patch.deleted?(b.sb?b.e:e):e,deleted:!!patch.deleted}]).then(ok=>sbToast(ok?'✓ Đã cập nhật đề trên web của học sinh.':'Chưa gửi được lên máy chủ; sẽ tự gửi lại.',ok?'ok':'bad'))}return r});
+
+/* ---- thay nút "Đăng cho học sinh" của kiểu GitHub bằng đồng bộ với máy chủ ---- */
+async function sbQueued(){return ((await sbKvGet('queue'))||[]).reduce((n,i)=>n+i.rows.length,0)}
+async function sbRefreshUi(){const n=await sbQueued(),b=document.getElementById('ghBtn');
+  if(b){b.classList.toggle('has-dot',n>0||!sbOnline);b.title=n?'Còn '+n+' mục chưa gửi được lên máy chủ · bấm để gửi lại':(sbOnline?'Đã kết nối máy chủ · bài và đề đăng tự động cho học sinh':'Chưa kết nối được máy chủ')}
+  const e=document.getElementById('ghPend');if(e)e.textContent=(sbOnline?'Đã kết nối máy chủ. ':'Chưa kết nối được máy chủ (kiểm tra mạng). ')+(n?'Đang chờ gửi: '+n+' mục.':'Không có mục nào đang chờ.')}
+window.ghRefresh=sbRefreshUi;
+window.publishToGitHub=async function(msgId){await sbSyncAll();const n=await sbQueued(),t=n?'Còn '+n+' mục chưa gửi được lên máy chủ. Kiểm tra mạng rồi thử lại.':'✓ Mọi bài và đề đã ở trên máy chủ. Học sinh thấy ngay khi mở web.';
+  const m=msgId&&document.getElementById(msgId);if(m){m.textContent=t;m.className='small '+(n?'st-bad':'st-ok')}sbToast(t,n?'bad':'ok')};
+/* một lần: đưa bài/đề đã tải lên từ trước (đang nằm trong trình duyệt này) lên máy chủ */
+window.sbMigrateLocal=async function(){if(!isTeacher())return;const loc=(await readLocalQuestionBank()).filter(q=>q&&q.id&&String(q.status||'published').toLowerCase()==='published'),have=new Set([...sbQ.values()].filter(r=>!r.deleted).map(r=>String(r.id))),qs=loc.filter(q=>!have.has(String(q.id))),exs=readCustomExams().filter(e=>e&&e.code);
+  const m=document.getElementById('ghMsg'),say=(t,bad)=>{if(m){m.textContent=t;m.className='small '+(bad?'st-bad':'st-ok')}sbToast(t,bad?'bad':'ok')};
+  if(!qs.length&&!exs.length)return say('Không có bài hay đề nào trên máy này cần đưa lên (mọi thứ đã ở trên máy chủ).');
+  if(!confirm('Đưa '+qs.length+' câu bài tập và '+exs.length+' đề đang có trên máy này lên máy chủ cho học sinh thấy?'))return;
+  say('Đang đưa lên máy chủ…');let ok=true;if(qs.length)ok=await sbSend('questions',qs.map(sbRecord));
+  if(ok&&exs.length){ok=await sbSend('exams',exs.map(e=>({code:String(e.code),data:{...e},deleted:false})));if(ok){const codes=new Set(exs.map(e=>String(e.code)));try{writeCustomExams(readCustomExams().filter(e=>!codes.has(String(e.code))))}catch{}}}
+  say(ok?'✓ Đã đưa '+qs.length+' câu và '+exs.length+' đề lên máy chủ. Học sinh thấy ngay khi mở web.':'Chưa đưa hết được (mất mạng?). Phần chưa gửi sẽ tự gửi lại.',!ok)};
+window.ghCard=function(){setTimeout(sbRefreshUi,60);return stCard('Bài và đề cho học sinh (tự động)',`<p class="small"><b>Bài và đề bạn tải lên được đăng cho học sinh ngay khi lưu</b>: không cần bấm gì thêm, không cần tải file hay cấp quyền.</p><div class="exb-actions"><button class="btn" type="button" onclick="publishToGitHub('ghMsg')">↻ Đồng bộ ngay</button><button class="btn primary" type="button" onclick="sbMigrateLocal()">⬆ Đưa bài và đề có sẵn trên máy này lên máy chủ</button></div><p class="small" id="ghPend" role="status">Đang kiểm tra…</p><p class="small" id="ghMsg" role="status"></p>`,'Dữ liệu nằm trên máy chủ Supabase. Chỉ tài khoản Giáo viên (có mã) mới ghi được; học sinh chỉ đọc và làm bài.')};
+
+/* ---- khởi động ---- */
+/* mở ra ngoài để kiểm thử và gỡ lỗi (Console) */
+Object.assign(window,{sbSyncAll,sbSess,sbSetSess,sbSend,sbPull,sbApply,sbQ,sbE,sbFlush,sbToken});
+sbOAuthReturn().catch(()=>{}).then(async()=>{if(sbSess()){await sbLoadProfile().catch(()=>{});sbStart()}auApply();sbBoot();if(window.__SB_RECOVERY)setTimeout(sbRecoveryAsk,300)});
+}</script>
 </body></html>

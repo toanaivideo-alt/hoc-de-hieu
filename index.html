@@ -3259,7 +3259,8 @@ async function downloadPublishIndex(msgId){const say=(t,bad)=>{if(msgId&&$(msgId
 .au-badge.gv{background:#B45309}.au-badge.hs{background:var(--blue,#0284C7)}
 .au-row{display:flex;gap:10px;margin-top:12px}
 /* Học sinh (và khách) không thấy các nút của giáo viên */
-body:not(.is-teacher) :is(.upload-open,.exup,.exm-btn,[onclick*="openUploadModal"],[onclick*="editQuestionId"],[onclick*="deleteQuestion"],[onclick*="downloadPublishIndex"],[onclick*="go('classroom')"],[onclick*="fmToggle"],[onclick*="fmEdit"],[onclick*="fmDel"],[onclick*="fmNewIllusFor"],[onclick*="clsImport"]){display:none!important}</style>
+body:not(.is-teacher) :is(.upload-open,.exup,.exm-btn,[onclick*="openUploadModal"],[onclick*="editQuestionId"],[onclick*="deleteQuestion"],[onclick*="downloadPublishIndex"],[onclick*="go('classroom')"],[onclick*="fmToggle"],[onclick*="fmEdit"],[onclick*="fmDel"],[onclick*="fmNewIllusFor"],[onclick*="clsImport"]){display:none!important}
+.au-switch{margin-top:14px;padding-top:12px;border-top:1px solid rgba(128,148,190,.4)}</style>
 <script id="toanai-auth">/* ===== Tài khoản: đăng ký / đăng nhập bằng Gmail và phân quyền Học sinh – Giáo viên =====
    Dữ liệu lưu trong trình duyệt: toanai-users-v1 (tài khoản), toanai-session-v1 (người đang đăng nhập).
    Chưa có máy chủ nên đây là "khóa giao diện" trên từng máy; khi chuyển sang Supabase phải kiểm quyền ở máy chủ.
@@ -3298,7 +3299,7 @@ function auClose(){const m=$('authModal');if(m)m.hidden=true;document.removeEven
 function auTab(t){auView.email=auVal('auEmail')||auView.email;auView.tab=t;auView.msg='';auView.tone='';auRender()}
 function auRole(r){auView.role=r;const c=$('auCodeRow');if(c)c.hidden=r!=='teacher'}
 function auRender(){const m=$('authModal');if(!m)return;const u=auUser(),v=auView,msg=`<p class="au-msg ${v.tone}" id="auMsg" role="status">${esc(v.msg)}</p>`;let h;
-  if(u){const gv=u.role==='teacher';h=`<h2>Xin chào, ${esc(u.name||u.email)}</h2><p class="au-sub">${esc(u.email)}</p><p><span class="au-badge ${gv?'gv':'hs'}">${gv?'Giáo viên':'Học sinh'}</span></p><p class="au-note">${gv?'Bạn có thêm: ＋ Cập nhật Bài tập, ⬆ Tải đề lên, sửa/xóa bài và đề, công thức cốt lõi, Lớp của tôi, xuất index.html.':'Bạn đọc bài, làm bài tập và làm đề thi. Việc đăng bài, đăng đề dành cho giáo viên.'}</p>${msg}<div class="au-row"><button class="btn primary" type="button" onclick="auClose()">Đóng</button><button class="btn" type="button" onclick="auLogout()">Đăng xuất</button></div>`}
+  if(u){const gv=u.role==='teacher';h=`<h2>Xin chào, ${esc(u.name||u.email)}</h2><p class="au-sub">${esc(u.email)}</p><p><span class="au-badge ${gv?'gv':'hs'}">${gv?'Giáo viên':'Học sinh'}</span></p><p class="au-note">${gv?'Bạn có thêm: ＋ Cập nhật Bài tập, ⬆ Tải đề lên, sửa/xóa bài và đề, công thức cốt lõi, Lớp của tôi, xuất index.html.':'Bạn đọc bài, làm bài tập và làm đề thi. Việc đăng bài, đăng đề dành cho giáo viên.'}</p><form class="au-form au-switch" onsubmit="event.preventDefault();auSwitchRole()"><b>Đổi vai trò</b>${gv?'<p class="au-note">Chuyển về Học sinh để xem web như học sinh. Muốn quay lại Giáo viên sẽ phải nhập lại mã.</p><button class="btn" type="submit">Chuyển về Học sinh</button>':'<label>Mã giáo viên<input id="auCode" type="password" autocomplete="off" placeholder="Do chủ web cung cấp"></label><button class="btn" type="submit">Chuyển sang Giáo viên</button>'}</form>${msg}<div class="au-row"><button class="btn primary" type="button" onclick="auClose()">Đóng</button><button class="btn" type="button" onclick="auLogout()">Đăng xuất</button></div>`}
   else{const reg=v.tab==='reg',cid=AU_GOOGLE_CLIENT_ID;
     h=`<div class="au-tabs" role="tablist"><button type="button" role="tab" aria-selected="${!reg}" onclick="auTab('login')">Đăng nhập</button><button type="button" role="tab" aria-selected="${reg}" onclick="auTab('reg')">Đăng ký</button></div>
 <form class="au-form" onsubmit="event.preventDefault();${reg?'auRegister()':'auLogin()'}">
@@ -3322,6 +3323,13 @@ async function auLogin(){try{const em=auEmail(auVal('auEmail')),pw=($('auPw')||{
   if(u&&!u.hash)return auMsg('Tài khoản này đăng nhập bằng Google. Hãy dùng nút Google.',1);
   if(!u||await stHash(pw,u.salt)!==u.hash)return auMsg('Gmail hoặc mật khẩu chưa đúng.',1);auSetSession(em.v);auAfter()}catch(e){auMsg(String(e.message||e),1)}}
 function auLogout(){auSetSession('');auApply();if(AU_TEACHER_PAGES.includes(state.page))go('home');else if(typeof render==='function'&&state.page!=='examTake')render();auView.tab='login';auRender()}
+
+/* đổi vai trò khi đã đăng nhập: lên Giáo viên phải nhập đúng mã; về Học sinh thì không cần */
+async function auSwitchRole(){try{const u=auUser();if(!u)return;const users=auRead(),to=u.role==='teacher'?'student':'teacher';
+  if(to==='teacher'&&!await auCodeOk(auVal('auCode')))return auMsg('Mã giáo viên chưa đúng. Hãy liên hệ chủ web để nhận mã.',1);
+  users[u.email].role=to;if(!auWrite(users))return auMsg('Không lưu được (trình duyệt đang chặn lưu trữ).',1);
+  if(to==='student'&&AU_TEACHER_PAGES.includes(state.page))go('home');
+  auAfter();auMsg(to==='teacher'?'✓ Đã chuyển sang Giáo viên.':'✓ Đã chuyển về Học sinh.')}catch(e){auMsg(String(e.message||e),1)}}
 
 /* ---- đăng nhập bằng Google (chỉ hiện khi AU_GOOGLE_CLIENT_ID đã điền; chạy trên địa chỉ https đã khai báo với Google) ---- */
 function auLoadGis(){return new Promise((ok,no)=>{if(window.google&&google.accounts&&google.accounts.id)return ok();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=ok;s.onerror=no;document.head.append(s)})}

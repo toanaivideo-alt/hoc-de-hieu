@@ -3228,37 +3228,39 @@ async function downloadPublishIndex(msgId){const say=(t,bad)=>{if(msgId&&$(msgId
     say('Đã tải index.html mới ('+qs.length+' câu, '+exams.length+' đề của bạn'+(typeof fmDb!=='undefined'?', '+fmDb.formulas.length+' công thức cốt lõi':'')+'). Lên GitHub, mở kho toan-ai → Add file → Upload files → kéo file này vào → Commit changes. Sau 1–2 phút mọi người sẽ thấy bài mới.')}
   catch(err){say('Không tạo được file: '+err.message,true)}}
 </script>
-<style id="toanai-search-css">/* Bảng kết quả tìm kiếm ở Trang chủ */
-.sr-back{position:fixed;inset:0;z-index:55;background:#0b1b3db8;display:grid;place-items:center;padding:16px}
+<style id="toanai-search-css">/* Bảng kết quả tìm kiếm ở Trang chủ: phần đầu gọn, danh sách bài chiếm phần lớn khung */
+.sr-back{position:fixed;inset:0;z-index:55;background:#0b1b3db8;display:grid;place-items:center;padding:12px}
 .sr-back[hidden]{display:none}
-.sr-dlg{position:relative;width:min(1100px,100%);height:min(900px,94vh);display:flex;flex-direction:column;background:var(--surface,#fff);color:var(--ink,#13213D);border-radius:20px;box-shadow:0 20px 60px #071a4166;padding:22px 22px 14px}
-.sr-x{position:absolute;top:-10px;right:-10px;width:34px;height:34px;border-radius:50%;border:0;background:var(--navy,#0A2558);color:#fff;font-size:15px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.sr-top{display:flex;gap:14px;margin-bottom:14px}
-.sr-top input{flex:1;min-width:0;height:54px;border:1.5px solid rgba(128,148,190,.55);border-radius:14px;padding:0 20px;font:inherit;font-size:18px;background:var(--surface,#fff);color:inherit}
+.sr-dlg{position:relative;width:min(1100px,100%);height:min(900px,96vh);display:flex;flex-direction:column;background:var(--surface,#fff);color:var(--ink,#13213D);border-radius:18px;box-shadow:0 20px 60px #071a4166;padding:14px 18px 10px}
+.sr-x{position:absolute;top:-10px;right:-10px;width:32px;height:32px;border-radius:50%;border:0;background:var(--navy,#0A2558);color:#fff;font-size:14px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:2}
+.sr-top{display:flex;gap:10px;margin-bottom:8px;flex:none}
+.sr-top input{flex:1;min-width:0;height:46px;border:1.5px solid rgba(128,148,190,.55);border-radius:12px;padding:0 16px;font:inherit;font-size:17px;background:var(--surface,#fff);color:inherit}
 .sr-top input:focus{outline:2px solid var(--blue,#0284C7);outline-offset:1px}
-.sr-go{width:64px;height:54px;border:0;border-radius:14px;background:linear-gradient(135deg,var(--navy,#0A2558),var(--blue,#0284C7));color:#fff;cursor:pointer;display:grid;place-items:center;box-shadow:0 6px 16px rgba(2,132,199,.35)}
-.sr-filters{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;margin-bottom:10px}
-.sr-filters label{display:grid;gap:5px;font-size:14px;font-weight:600;color:var(--muted,#5B6782)}
-.sr-filters select{height:48px;border:1.5px solid rgba(128,148,190,.55);border-radius:12px;padding:0 14px;font:inherit;font-weight:700;background:var(--surface,#fff);color:var(--ink,#13213D)}
+.sr-go{width:56px;height:46px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--navy,#0A2558),var(--blue,#0284C7));color:#fff;cursor:pointer;display:grid;place-items:center;box-shadow:0 4px 12px rgba(2,132,199,.35)}
+.sr-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 12px;margin-bottom:6px;flex:none}
+.sr-filters label{display:grid;gap:3px;font-size:12.5px;font-weight:600;color:var(--muted,#5B6782);min-width:0}
+.sr-filters select{height:38px;min-width:0;width:100%;border:1.5px solid rgba(128,148,190,.55);border-radius:10px;padding:0 10px;font:inherit;font-size:14px;font-weight:700;background:var(--surface,#fff);color:var(--ink,#13213D);text-overflow:ellipsis}
 .sr-filters select:disabled{opacity:.55}
-.sr-pager{display:flex;justify-content:center;align-items:center;gap:10px;min-height:0;margin:2px 0}
-.sr-pager:not(:empty){margin:8px 0}
-.sr-pg,.sr-pn{height:46px;border:1.5px solid rgba(128,148,190,.55);border-radius:12px;background:var(--surface,#fff);color:inherit;font:inherit;font-size:18px;font-weight:700}
-.sr-pg{width:56px;cursor:pointer}.sr-pg:disabled{opacity:.4;cursor:default}
-.sr-pn{width:84px;text-align:center}
-.sr-of{color:var(--muted,#5B6782);font-size:17px}
-.sr-count{margin:6px 0 8px;font-size:15px;color:#15803D;font-weight:600}
+.sr-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 0 8px;flex:none;min-height:36px}
+.sr-count{margin:0;font-size:14.5px;color:#15803D;font-weight:600}
 .sr-count.none{color:var(--muted,#5B6782);font-weight:500}
-.sr-list{flex:1;min-height:0;overflow-y:auto;display:grid;gap:12px;align-content:start;padding-right:6px}
-.sr-item{display:flex;align-items:center;justify-content:space-between;gap:18px;border:1px solid var(--line,#DCE4EF);border-radius:16px;padding:16px 20px;background:var(--surface,#fff)}
+.sr-pager{display:flex;align-items:center;gap:8px}
+.sr-pg,.sr-pn{height:36px;border:1.5px solid rgba(128,148,190,.55);border-radius:10px;background:var(--surface,#fff);color:inherit;font:inherit;font-size:16px;font-weight:700}
+.sr-pg{width:44px;cursor:pointer}.sr-pg:disabled{opacity:.4;cursor:default}
+.sr-pn{width:64px;text-align:center}
+.sr-of{color:var(--muted,#5B6782);font-size:15px}
+.sr-list{flex:1 1 0;min-height:0;overflow-y:auto;display:grid;gap:10px;align-content:start;padding-right:6px}
+.sr-item{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid var(--line,#DCE4EF);border-radius:14px;padding:12px 16px;background:var(--surface,#fff)}
 .sr-main{min-width:0}
-.sr-item h4{margin:0 0 6px;font-size:18px;line-height:1.35}
+.sr-item h4{margin:0 0 4px;font-size:16px;line-height:1.35;font-weight:700}
 .sr-item mark{background:#FDE68A;color:#13213D;border-radius:4px;padding:0 2px}
-.sr-meta{margin:0 0 10px;color:var(--muted,#5B6782);font-size:15px;line-height:1.45}
-.sr-tags{display:flex;flex-wrap:wrap;gap:8px}
-.sr-tags span{padding:5px 14px;border-radius:999px;background:#E8F0FF;color:#1E3A8A;font-weight:700;font-size:14px}
-.sr-open{flex:none;white-space:nowrap;min-height:46px;padding:0 22px}
-@media(max-width:640px){.sr-filters{grid-template-columns:1fr}.sr-item{flex-direction:column;align-items:stretch}.sr-open{width:100%}.sr-x{top:6px;right:6px}.sr-dlg{padding:16px 14px 10px}}</style>
+.sr-meta{margin:0 0 7px;color:var(--muted,#5B6782);font-size:14px;line-height:1.4}
+.sr-tags{display:flex;flex-wrap:wrap;gap:6px}
+.sr-tags span{padding:3px 12px;border-radius:999px;background:#E8F0FF;color:#1E3A8A;font-weight:700;font-size:13px}
+.sr-open{flex:none;white-space:nowrap;min-height:40px;padding:0 20px}
+@media(max-width:900px){.sr-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.sr-dlg{padding:12px 10px 8px}.sr-x{top:4px;right:4px}.sr-item{flex-direction:column;align-items:stretch;gap:10px}.sr-open{width:100%}}
+@media(max-height:760px){.sr-top input{height:42px}.sr-go{height:42px}.sr-filters select{height:34px}.sr-item{padding:10px 14px}.sr-meta{margin-bottom:5px}}</style>
 <script id="toanai-search">/* ===== Tìm kiếm ở Trang chủ: theo từ ngữ trong đề (hoặc theo ID), kèm bảng kết quả có bộ lọc Lớp · Chương · Bài · Độ khó =====
    Ô tìm ở Trang chủ: nhập ID 8–9 số thì mở thẳng bài (như cũ); nhập chữ thì mở bảng kết quả này. */
 const SR_PER=8;
@@ -3317,7 +3319,7 @@ function srOpen(q){sr={q:String(q||'').trim(),cc:'',ch:'',ls:'',lv:'',page:1,res
   m.innerHTML=`<section class="sr-dlg" role="dialog" aria-modal="true" aria-label="Tìm kiếm bài tập"><button class="sr-x" type="button" aria-label="Đóng" onclick="srClose()">✕</button>
 <form class="sr-top" onsubmit="event.preventDefault();srType(this.q.value);clearTimeout(srType.t);srUpdate()"><input name="q" id="srQ" type="search" autocomplete="off" placeholder="Nhập từ khóa trong đề, ví dụ: tam giác, đạo hàm, xác suất… (hoặc ID)" value="${esc(sr.q)}" oninput="srType(this.value)"><button class="sr-go" type="submit" aria-label="Tìm"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button></form>
 <div class="sr-filters"><label>Lớp<select id="srCc" onchange="srChange('cc')"></select></label><label>Chương<select id="srCh" onchange="srChange('ch')"></select></label><label>Bài<select id="srLs" onchange="srChange('ls')"></select></label><label>Độ khó<select id="srLv" onchange="srChange('lv')"></select></label></div>
-<div class="sr-pager" id="srPager"></div><p class="sr-count" id="srCount" role="status" aria-live="polite"></p><div class="sr-list" id="srList"></div></section>`;
+<div class="sr-bar"><p class="sr-count" id="srCount" role="status" aria-live="polite"></p><div class="sr-pager" id="srPager"></div></div><div class="sr-list" id="srList"></div></section>`;
   m.hidden=false;document.body.style.overflow='hidden';document.addEventListener('keydown',srKey);srFill();srUpdate();setTimeout(()=>{const i=$('srQ');if(i)i.focus()},30)}
 function srKey(e){if(e.key==='Escape')srClose()}
 function srClose(){const m=$('srModal');if(m)m.hidden=true;document.body.style.overflow='';document.removeEventListener('keydown',srKey)}

@@ -2812,7 +2812,8 @@ function stBody(id,p){
   if(id==='profile')return stCard('Thông tin cơ bản',`<form class="st-grid" onsubmit="stSaveProfile();return false" novalidate>
 ${stField('stName','Họ và tên',p.name,'autocomplete="name" maxlength="60" required')}
 ${stField('stBirth','Ngày sinh',p.birth,'type="date" autocomplete="bday"')}
-<label class="st-f"><span>Vai trò</span><select id="stRole">${ST_ROLES.map(r=>`<option${(p.role||'Học sinh')===r?' selected':''}>${r}</option>`).join('')}</select></label>
+<label class="st-f"><span>Vai trò</span><select id="stRole" onchange="stRoleChange()">${ST_ROLES.map(r=>`<option${(p.role||'Học sinh')===r?' selected':''}>${r}</option>`).join('')}</select></label>
+<label class="st-f" id="stCodeRow" hidden><span>Mã giáo viên</span><input id="stCode" type="password" autocomplete="off" placeholder="Do chủ web cung cấp"></label>
 <label class="st-f"><span>Khối lớp</span><select id="stLevel">${levels.map(l=>`<option${l===p.level?' selected':''}>${esc(l)}</option>`).join('')}</select></label>
 ${stField('stClass','Tên lớp',p.className,'maxlength="20" placeholder="Ví dụ: 12A1"')}
 ${stField('stSchool','Trường học',p.school,'autocomplete="organization" maxlength="100" placeholder="Ví dụ: THPT Chu Văn An"')}
@@ -2853,7 +2854,8 @@ ${stSwitch('Chế độ tập trung','Giảm bớt màu sắc và hiệu ứng �
   return ''}
 function stMsg(id,t,bad){const m=$(id);if(m){m.textContent=t;m.className='small '+(bad?'st-bad':'st-ok')}}
 function stVal(id){return (($(id)||{}).value||'').trim()}
-function stSaveProfile(){const name=stVal('stName');if(!name)return stMsg('stInfoMsg','Hãy nhập họ và tên.',true);
+async function stSaveProfile(){const name=stVal('stName');if(!name)return stMsg('stInfoMsg','Hãy nhập họ và tên.',true);
+  if(typeof auGateRole==='function'){const err=await auGateRole($('stRole').value,stVal('stCode'));if(err)return stMsg('stInfoMsg',err,true)}
   accSaveProfile({name,birth:stVal('stBirth'),role:$('stRole').value,level:$('stLevel').value,className:stVal('stClass'),school:stVal('stSchool'),province:stVal('stProvince')});render();stMsg('stInfoMsg','✓ Đã lưu.')}
 function stSaveContact(){const user=stVal('stUser').toLowerCase(),phone=stVal('stPhone').replace(/[\s.-]/g,''),email=stVal('stEmail');
   if(user&&!/^[a-z0-9._]{3,30}$/.test(user))return stMsg('stContactMsg','Tên đăng nhập 3–30 ký tự: chữ thường không dấu, số, dấu . hoặc _.',true);
@@ -3291,8 +3293,9 @@ async function auCodeOk(code){code=String(code||'').trim();return !!code&&AU_GV_
 function auMsg(t,bad){auView.msg=t;auView.tone=bad?'bad':'';const e=$('auMsg');if(e){e.textContent=t;e.className='au-msg '+auView.tone}}
 
 /* ---- giao diện: nút trên đầu trang + hộp đăng nhập/đăng ký ---- */
-function auMount(){if($('authBtn'))return;const g=$('themeBtn');if(!g)return;const b=document.createElement('button');b.id='authBtn';b.type='button';b.className='btn au-btn';b.onclick=()=>auOpen();g.before(b)}
-function auApply(){const u=auUser(),t=!!u&&u.role==='teacher';document.body.classList.toggle('is-teacher',t);document.body.classList.toggle('is-student',!t);auMount();const b=$('authBtn');if(b)b.innerHTML=u?`<span aria-hidden="true">👤</span> ${esc(u.name||u.email)} <small class="au-role">${t?'Giáo viên':'Học sinh'}</small>`:'<span aria-hidden="true">👤</span> Đăng nhập'}
+function auMount(){if($('authBtn'))return;const g=$('themeBtn');if(!g)return;const b=document.createElement('button');b.id='authBtn';b.type='button';b.className='btn au-btn';b.onclick=()=>auUser()?auLogout():auOpen();g.before(b)}
+function auApply(){const u=auUser(),t=!!u&&u.role==='teacher';document.body.classList.toggle('is-teacher',t);document.body.classList.toggle('is-student',!t);auMount();const b=$('authBtn');if(b){b.innerHTML=u?'<span aria-hidden="true">👤</span> Đăng xuất':'<span aria-hidden="true">👤</span> Đăng nhập';b.title=u?`Đang đăng nhập: ${u.name||u.email} (${t?'Giáo viên':'Học sinh'}) · bấm để đăng xuất`:'Đăng nhập hoặc đăng ký'}
+  if(typeof accProfile==='function'){const p=accProfile(),want=t?'Giáo viên':(p.role==='Giáo viên'?'Học sinh':p.role||'Học sinh');if(want!==p.role)accSaveProfile({role:want})}}
 function auOpen(tab,msg){auView={...auView,tab:tab||(auUser()?'me':'login'),msg:msg||'',tone:msg?'bad':''};let m=$('authModal');if(!m){m=document.createElement('div');m.id='authModal';m.className='au-back';m.addEventListener('click',e=>{if(e.target===m)auClose()});document.body.append(m)}m.hidden=false;auRender();document.addEventListener('keydown',auKey)}
 function auKey(e){if(e.key==='Escape')auClose()}
 function auClose(){const m=$('authModal');if(m)m.hidden=true;document.removeEventListener('keydown',auKey)}
@@ -3324,6 +3327,15 @@ async function auLogin(){try{const em=auEmail(auVal('auEmail')),pw=($('auPw')||{
   if(!u||await stHash(pw,u.salt)!==u.hash)return auMsg('Gmail hoặc mật khẩu chưa đúng.',1);auSetSession(em.v);auAfter()}catch(e){auMsg(String(e.message||e),1)}}
 function auLogout(){auSetSession('');auApply();if(AU_TEACHER_PAGES.includes(state.page))go('home');else if(typeof render==='function'&&state.page!=='examTake')render();auView.tab='login';auRender()}
 
+/* Cài đặt → Hồ sơ → Vai trò: chọn Giáo viên phải đang đăng nhập và nhập đúng mã. Trả về '' nếu được, hoặc câu báo lỗi. */
+function stRoleChange(){const r=($('stRole')||{}).value,row=$('stCodeRow');if(row)row.hidden=!(r==='Giáo viên'&&!isTeacher())}
+async function auGateRole(role,code){const u=auUser(),wantT=role==='Giáo viên';
+  if(!u)return wantT?(auOpen('login','Hãy đăng nhập (hoặc đăng ký) trước khi chọn vai trò Giáo viên.'),'Hãy đăng nhập trước khi chọn vai trò Giáo viên.'):'';
+  if(wantT===(u.role==='teacher'))return '';
+  if(wantT&&!await auCodeOk(code))return 'Cần nhập đúng mã giáo viên để chuyển sang vai trò Giáo viên.';
+  const users=auRead();users[u.email].role=wantT?'teacher':'student';if(!auWrite(users))return 'Không lưu được (trình duyệt đang chặn lưu trữ).';
+  if(!wantT&&AU_TEACHER_PAGES.includes(state.page))go('home');
+  auApply();return ''}
 /* đổi vai trò khi đã đăng nhập: lên Giáo viên phải nhập đúng mã; về Học sinh thì không cần */
 async function auSwitchRole(){try{const u=auUser();if(!u)return;const users=auRead(),to=u.role==='teacher'?'student':'teacher';
   if(to==='teacher'&&!await auCodeOk(auVal('auCode')))return auMsg('Mã giáo viên chưa đúng. Hãy liên hệ chủ web để nhận mã.',1);

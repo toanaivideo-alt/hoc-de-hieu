@@ -3246,8 +3246,7 @@ const KNTT_LESSONS={
 /* danh sách bài của chương thứ idx (theo thứ tự chương trong danh mục, bỏ "Ôn tập cuối năm") */
 function knttLessons(level,idx){const name=(chapters[level]||[])[idx]||'';const m=/^Chương\s+(\d+)/i.exec(name);if(!m)return null;const ch=(KNTT_LESSONS[level]||[])[+m[1]-1];return ch?ch[1].map((t,i)=>({n:i+1,sgk:ch[0]+i,name:t})):null}
 function knttLabel(l){return 'Bài '+l.n+'. '+l.name+(l.sgk!==l.n?' (SGK bài '+l.sgk+')':'')}
-const _knttOldLessonList=typeof lessonList==='function'?lessonList:null;
-function lessonList(){if(/^Ôn tập/i.test((chapters[state.level]||[])[state.chapter]||''))return [];const L=knttLessons(state.level,state.chapter);return L?L.map(knttLabel):(_knttOldLessonList?_knttOldLessonList():[])}
+function lessonList(){if(/^Ôn tập/i.test((chapters[state.level]||[])[state.chapter]||''))return [];const L=knttLessons(state.level,state.chapter);return L?L.map(knttLabel):(isTsaLevel(state.level)?[1,2,3,4,5,6,7,8,9].map(n=>'Dạng bài '+n):['Khái niệm và kiến thức cơ bản','Tính chất và định lí','Bài tập vận dụng','Luyện tập tổng hợp'])}
 if(typeof exbLessonNames==='function'){var _knttOldExb=exbLessonNames;exbLessonNames=function(ch){const L=knttLessons(exb.level,ch);return L?L.map(l=>l.name):_knttOldExb(ch)}}
 /* ô Bài trong Cập nhật Bài tập: hiện tên bài theo lớp/chương đang chọn */
 function knttFillTagLesson(){const cls=document.getElementById('tagClass'),chs=document.getElementById('tagChapter'),les=document.getElementById('tagLesson');if(!cls||!chs||!les)return;

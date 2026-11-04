@@ -3248,14 +3248,16 @@ function pubJson(v){return JSON.stringify(v).replace(/[<\u2028\u2029]/g,c=>'\\u'
 async function pubQuestions(base){const own=Array.isArray(window.__TOANAI_EMBEDDED_QUESTIONS)?window.__TOANAI_EMBEDDED_QUESTIONS:[];const bi=new Set((base||[]).map(q=>String(q.id||'')));const remote=bi.size?[...own.filter(q=>!bi.has(String(q.id||''))),...base]:own;const local=await readLocalQuestionBank();
   const ids=new Set(remote.map(q=>String(q.id||'')));const admin=readQuestionAdminState();
   return [...remote,...local.filter(q=>!ids.has(String(q.id||'')))].map(q=>{const key=String(q._admin_key||q.id||'');const item={...q,_admin_key:key};delete item._local_only;const o=admin.overrides[key];
-    if(o?.id){item.id=o.id;item.difficulty=idParts(o.id).level;item.sequence=o.id.slice(-3)}return item}).filter(q=>!admin.deleted.includes(String(q._admin_key||'')))}
+    if(o?.id){item.id=o.id;item.difficulty=idParts(o.id).level;item.sequence=o.id.slice(-3)}if(o&&o.edit)Object.assign(item,o.edit);return item}).filter(q=>!admin.deleted.includes(String(q._admin_key||'')))}
 /* đề gửi lên web: đề trên máy này + đề đang có trên GitHub (trừ đề giáo viên đã xóa trên máy này) */
 function pubExams(base){const mine=readCustomExams().map(e=>({...e}));if(!base||!base.length)return mine;let seen=[];try{seen=JSON.parse(localStorage.getItem(PUB_SEEDED)||'[]')}catch{}
   const have=new Set(mine.map(e=>e.code));return [...base.filter(e=>e&&e.code&&!have.has(e.code)&&!seen.includes(e.code)).map(e=>({...e})),...mine]}
+/* nội dung bài: của máy này + của GitHub, mỗi bài lấy bản mới hơn */
+function pubLessons(remote){const mine=nvLsExport(),out={...(remote||{})};Object.keys(mine).forEach(k=>{if(!out[k]||(mine[k].ts||0)>=(out[k].ts||0))out[k]=mine[k]});return out}
 /* gói trang + câu hỏi + đề thành một file index.html; base = {qs, exams} đang có trên GitHub (nếu có) */
 async function pubBuildHtml(base){if(typeof bankReady!=='undefined'&&bankReady)await bankReady;let html=await pubSourceHtml();
     const qs=await pubQuestions(base&&base.qs),exams=pubExams(base&&base.exams);
-    const body='window.__TOANAI_EMBEDDED_QUESTIONS='+pubJson(qs)+';window.__TOANAI_LOGO_DATA_URL='+pubJson(window.__TOANAI_LOGO_DATA_URL||'')+';window.__TOANAI_EMBEDDED_EXAMS='+pubJson(exams)+';'+(typeof exmEdits==='function'?'window.__TOANAI_EXAM_EDITS='+pubJson(exmEdits())+';':'')+(typeof nvLsExport==='function'?'window.__TOANAI_LESSONS='+pubJson(nvLsExport())+';':'')+(typeof fmDb!=='undefined'?'window.__TOANAI_FORMULA_PUB='+pubJson({formulas:fmDb.formulas,illus:fmDb.illus})+';':'');
+    const body='window.__TOANAI_EMBEDDED_QUESTIONS='+pubJson(qs)+';window.__TOANAI_LOGO_DATA_URL='+pubJson(window.__TOANAI_LOGO_DATA_URL||'')+';window.__TOANAI_EMBEDDED_EXAMS='+pubJson(exams)+';'+(typeof exmEdits==='function'?'window.__TOANAI_EXAM_EDITS='+pubJson(exmEdits())+';':'')+(typeof nvLsExport==='function'?'window.__TOANAI_LESSONS='+pubJson(pubLessons(base&&base.lessons))+';':'')+(typeof fmDb!=='undefined'?'window.__TOANAI_FORMULA_PUB='+pubJson({formulas:fmDb.formulas,illus:fmDb.illus})+';':'');
     const open='<script id="toanai-embedded-data">',i=html.indexOf(open),j=html.indexOf('<'+'/script>',i);if(i<0||j<0)throw new Error('Không tìm thấy vùng dữ liệu trong trang.');
     html=html.slice(0,i+open.length)+body+html.slice(j);
     return{html,qs,exams}}
@@ -3294,9 +3296,11 @@ async function ghPending(){try{if(typeof bankReady!=='undefined'&&bankReady)awai
   const loc=await readLocalQuestionBank(),nq=loc.filter(q=>!emb.has(String(q.id||''))).length;
   const ex=new Set((window.__TOANAI_EMBEDDED_EXAMS||[]).map(e=>e&&e.code)),ne=readCustomExams().filter(e=>e&&e.code&&!ex.has(e.code)).length;
   let nd=0;try{nd=readQuestionAdminState().deleted.filter(k=>emb.has(String(k))).length}catch{}
-  return{nq,ne,nd,n:nq+ne+nd}}catch{return{nq:0,ne:0,nd:0,n:0}}}
-function ghPendText(p){if(!p.n)return 'Chưa có bài hay đề mới nào cần đăng.';const a=[];if(p.nq)a.push(p.nq+' câu bài tập mới');if(p.ne)a.push(p.ne+' đề mới');if(p.nd)a.push(p.nd+' câu đã xóa');return 'Đang chờ đăng: '+a.join(', ')+'.'}
-async function ghRefresh(){const p=await ghPending(),b=document.getElementById('ghBtn');
+  let nx=0;try{const ov=readQuestionAdminState().overrides||{};nx=Object.keys(ov).filter(k=>ov[k]&&ov[k].edit&&emb.has(String(k))).length}catch{}
+  let nl=0;try{const mine=JSON.parse(localStorage.getItem('toanai-lessons-v1')||'{}'),pub=window.__TOANAI_LESSONS||{};nl=Object.keys(mine).filter(k=>!pub[k]||(mine[k].ts||0)>(pub[k].ts||0)).length}catch{}
+  return{nq,ne,nd,nx,nl,n:nq+ne+nd+nx+nl}}catch{return{nq:0,ne:0,nd:0,nx:0,nl:0,n:0}}}
+function ghPendText(p){if(!p.n)return 'Chưa có bài hay đề mới nào cần đăng.';const a=[];if(p.nq)a.push(p.nq+' câu bài tập mới');if(p.ne)a.push(p.ne+' đề mới');if(p.nd)a.push(p.nd+' câu đã xóa');if(p.nx)a.push(p.nx+' câu đã sửa đề');if(p.nl)a.push(p.nl+' bài có nội dung lý thuyết/luyện tập mới');return 'Đang chờ đăng: '+a.join(', ')+'.'}
+async function ghRefresh(){const p=await ghPending(),b=document.getElementById('ghBtn');document.body.classList.toggle('nv-gh-pending',p.n>0&&!(typeof sbOn==='function'&&sbOn())&&typeof isTeacher==='function'&&isTeacher());
   if(b){b.classList.toggle('has-dot',p.n>0);b.title=p.n?'Đăng cho học sinh · '+ghPendText(p):'Đăng cho học sinh'}
   const e=document.getElementById('ghPend');if(e)e.textContent=ghPendText(p);return p}
 function ghMount(){if(document.getElementById('ghBtn'))return;const g=document.getElementById('themeBtn');if(!g)return;const b=document.createElement('button');b.id='ghBtn';b.type='button';b.className='btn nav-exam gh-btn';b.setAttribute('aria-label','Đăng cho học sinh');b.setAttribute('onclick','publishToGitHub()');
@@ -3313,7 +3317,7 @@ async function ghErr(res){let m='';try{m=(await res.json()).message||''}catch{}
 /* đọc dữ liệu câu hỏi/đề đang có trong file trên GitHub (chỉ đọc vùng dữ liệu của chính trang web) */
 function ghParseData(html){const open='<script id="toanai-embedded-data">',i=html.indexOf(open),j=html.indexOf('<'+'/script>',i);if(i<0||j<0)return null;
   const w={};try{new Function('window',html.slice(i+open.length,j))(w)}catch{return null}
-  return{qs:Array.isArray(w.__TOANAI_EMBEDDED_QUESTIONS)?w.__TOANAI_EMBEDDED_QUESTIONS:[],exams:Array.isArray(w.__TOANAI_EMBEDDED_EXAMS)?w.__TOANAI_EMBEDDED_EXAMS:[]}}
+  return{qs:Array.isArray(w.__TOANAI_EMBEDDED_QUESTIONS)?w.__TOANAI_EMBEDDED_QUESTIONS:[],exams:Array.isArray(w.__TOANAI_EMBEDDED_EXAMS)?w.__TOANAI_EMBEDDED_EXAMS:[],lessons:w.__TOANAI_LESSONS&&typeof w.__TOANAI_LESSONS==='object'?w.__TOANAI_LESSONS:{}}}
 
 async function publishToGitHub(msgId){
   const say=(t,tone)=>{const m=msgId&&document.getElementById(msgId);if(m){m.textContent=t;m.className='small '+(tone==='bad'?'st-bad':tone==='ok'?'st-ok':'')}ghToast(t,tone)};
@@ -4060,7 +4064,8 @@ body.nv-glass :is(.cu-bar,.cu-sq,.cu-lc,.cu-ch,.cu-tsa button,.ls-card,.ls-head,
 .nv-hero{background:linear-gradient(135deg,color-mix(in srgb,var(--blue) 8%,transparent),transparent)}
 .nv-feat{background:color-mix(in srgb,var(--soft) 40%,transparent)}
 body.nv .excard,body.nv .exhero{background:var(--nv-card)}
-#ghBtn{display:none!important}
+body:not(.nv-gh-pending) #ghBtn{display:none!important}
+#ghBtn.gh-btn{margin-left:6px}
 .nv-modal-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .nv-accbar{max-width:1100px;margin:14px auto 0;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:14px;background:var(--nv-card);color:var(--ink)}
 /* ===== Ô tìm kiếm trên thanh chính: thu lại thành kính lúp ===== */
@@ -4543,7 +4548,7 @@ async function nvQApply(rec,text,opt){opt=opt||{};const NL=String.fromCharCode(1
   if(typeof saveQuestionAdminState==='function')saveQuestionAdminState(admin);Object.assign(rec,edit);
   try{const prev=await readLocalQuestionBank();if(prev.some(x=>String(x.id)===String(rec.id)))await saveLocalQuestionBank(prev.map(x=>String(x.id)===String(rec.id)?{...x,...edit}:x))}catch{}
   if(typeof sbOn==='function'&&sbOn()&&typeof sbSend==='function'&&typeof sbRecord==='function')sbSend('questions',[sbRecord(rec)]).then(ok=>typeof sbToast==='function'&&sbToast(ok?'✓ Đã cập nhật đề trên web của học sinh.':'Chưa gửi được lên máy chủ; sẽ tự gửi lại.',ok?'ok':'bad'));
-  return{ok:true}}
+  if(typeof ghRefresh==='function')ghRefresh();return{ok:true}}
 function nvQAfterEdit(rec){const inFrame=!!document.getElementById('toanai-exercise-frame');if(inFrame){nvQClosePv();openExerciseDocument(rec.id)}else render()}
 async function nvQSave(key,w){const rec=findQuestionByAdminKey(key),box=document.getElementById('nvQErrs'),btn=document.getElementById('nvQSave');if(!rec)return;btn.disabled=true;
   try{const res=await nvQApply(rec,document.getElementById('nvQText').value);if(res.errors){box.innerHTML=res.errors.map(e=>`<li>${esc(e)}</li>`).join('');btn.disabled=false;return}w.close();nvQAfterEdit(rec)}
@@ -4564,7 +4569,7 @@ function nvLKey(){const L=NV.ls;return nvLsKeyOf(L.level,L.ci)+'-'+L.n}
 function nvLsGet(k){if(!nvLsStore)nvLsLoad();const d=nvLsStore[k]||{};return{items:d.items||[],extra:d.extra||[],order:d.order||[],ts:d.ts||0}}
 function nvLsPut(k,d){if(!nvLsStore)nvLsLoad();d.ts=Date.now();nvLsStore[k]=d;
   try{const loc=JSON.parse(localStorage.getItem(NV_LS_KEY)||'{}');loc[k]=d;localStorage.setItem(NV_LS_KEY,JSON.stringify(loc))}catch(e){alert('Không lưu được nội dung bài (bộ nhớ trình duyệt đầy, thường do ảnh quá lớn).');return false}
-  nvLsPush(k,d);return true}
+  nvLsPush(k,d);if(typeof ghRefresh==='function')ghRefresh();return true}
 async function nvLsPush(k,d){if(typeof sbOn!=='function'||!sbOn()||typeof sbFetch!=='function'||!isTeacher())return;
   try{const r=await sbFetch('/rest/v1/site_data?on_conflict=key',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:[{key:'lesson:'+k,data:d}]});
     if(typeof sbToast==='function')sbToast(r.ok?'✓ Đã cập nhật nội dung bài cho học sinh.':'Chưa gửi được nội dung bài lên máy chủ.',r.ok?'ok':'bad')}catch{}}
@@ -4747,7 +4752,7 @@ function nvHistUi(){const b=document.getElementById('nvBack'),f=document.getElem
 function nvHistGo(d){const fr=document.getElementById('toanai-exercise-frame');if(d<0&&fr){fr.remove();nvHistUi();return}
   const p=nvHist.pos+d;if(p<0||p>=nvHist.list.length)return;nvHist.pos=p;const o=nvHist.list[p];nvHist.busy=true;
   try{if(o.cu)NV.cu=JSON.parse(JSON.stringify(o.cu));if(o.ls)NV.ls=JSON.parse(JSON.stringify(o.ls));if(o.ex)NV.ex=JSON.parse(JSON.stringify(o.ex));state.page=o.page;render()}finally{nvHist.busy=false}nvSearchOpen=false;nvSearchApply();nvHistUi()}
-{const _afterH=nvAfter;nvAfter=function(){_afterH.apply(this,arguments);if(!nvHist.busy)nvHistRecord();nvHistUi()}}
+{const _afterH=nvAfter;nvAfter=function(){_afterH.apply(this,arguments);if(!nvHist.busy)nvHistRecord();nvHistUi();if(typeof ghRefresh==='function'&&typeof isTeacher==='function'&&isTeacher())ghRefresh()}}
 /* ---------- bỏ trang Khám phá/Công thức cũ: mọi đường dẫn về trang cũ được chuyển về trang mới ---------- */
 const NV_OLD_PAGES=['problems','catalog','gradeGroup','formulas'];
 function nvOldRemap(){if(state.page==='formulas'){state.page='curriculum';return}

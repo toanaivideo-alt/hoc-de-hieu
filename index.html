@@ -4301,7 +4301,16 @@ body.nv-glass :is(.nv-modal,.nv-fab-pop,.nvq-pop,[role=dialog],[role=alertdialog
 .ava-empty[hidden]{display:none}
 .ava-zoom{display:flex;align-items:center;gap:10px;justify-content:center;font-size:13px;color:var(--muted)}
 .ava-zoom input{flex:0 1 200px}
-.nvava .nvadd-imgs{justify-content:center}</style>
+.nvava .nvadd-imgs{justify-content:center}
+/* ===== Nút ☁ Đăng cho học sinh: nhỏ gọn vừa thanh chính, nằm bên trái biểu tượng tài khoản ===== */
+.nv-top .nv-search{order:7}
+.nv-top #ghBtn{order:8;position:relative;width:42px;height:42px;min-width:0;padding:0;margin:0;border-radius:50%;border:1px solid var(--cta);background:color-mix(in srgb,var(--cta) 18%,var(--surface));color:var(--navy);display:grid;place-items:center;cursor:pointer;box-shadow:none}
+.nv-top #ghBtn svg{width:22px;height:22px;flex:none}
+.nv-top #ghBtn .lbl{display:none}
+.nv-top #ghBtn:hover{background:var(--cta);color:var(--on-cta,#1f1300)}
+.nv-top #ghBtn.has-dot::after{content:"";position:absolute;right:3px;top:3px;width:11px;height:11px;border-radius:50%;background:#ef4444;border:2px solid var(--surface)}
+.nv-top #authBtn{order:9}
+.nv-top #themeBtn{order:10}</style>
 <script id="toanai-nv">/* ===== Giao diện mới: Trang chủ, Giáo trình, Trang Bài, Bài tập, Khóa học, Đăng kí =====
    Nạp CUỐI CÙNG. Không đổi cách đọc file, ID, dạng câu, tài khoản: chỉ thay phần trình bày và điều hướng.
    Các trang mới nằm trong state.page: curriculum, lesson, exercises, courses, register (home được thay mới).

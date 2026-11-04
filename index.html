@@ -2231,7 +2231,7 @@ function accDate(t){const d=new Date(t);return d.toLocaleDateString('vi-VN')+' '
 function accRange(k){const now=Date.now();return k==='today'?new Date(new Date().toDateString()).getTime():k==='7'?now-7*ACC_DAY:k==='30'?now-30*ACC_DAY:0}
 /* luyện một phần yếu: mở Khám phá đúng lớp, chương, mức độ */
 function accPractice(cc,ch,band){const level=levels.find(l=>String(classCodeFor(l)||'').padStart(2,'0')===cc);if(!level)return;const k=chapterCatalog.filter(c=>c.class_name===level).findIndex(c=>String(c.chapter_code).padStart(2,'0')===ch);
-  state.level=level;state.chapter=Math.max(0,k);state.stage=2;if(typeof expView!=='undefined'){expView.band=String(band);expView.type='';expView.status='';expView.lesson=''}go('catalog')}
+  NV.ex={q:'',cc:String(cc).padStart(2,'0'),ch:String(ch).padStart(2,'0'),ls:'',lv:'',kind:'',page:1};go('exercises')}
 /* 5 câu gợi ý gộp thành một đề ngắn trong "Đề ôn của tôi" (một đề mỗi ngày) */
 function accPlaySuggest(){const p=accProfile(),sug=accSuggest(accEnriched(),accGroups(accEnriched(),Date.now()),p).filter(s=>s.q.html_document);if(!sug.length)return;
   if(sug.length===1||typeof openExamTake!=='function'){accOpen(sug[0].q.id);return}
@@ -2266,7 +2266,7 @@ function accountPage(){
   const nSug=sug.filter(s=>s.q.html_document).length;
   return `<div class="acc acc2"><div class="crumb"><a href="#" onclick="go('home');return false">Trang chủ</a> / Tài khoản</div>
 <div class="acc-split"><aside class="acc-side">
-<section class="card acc-user"><div class="acc-avatar big" aria-hidden="true">${esc((p.name||'H').trim().charAt(0).toUpperCase())}</div>
+<section class="card acc-user"><button type="button" class="acc-avatar big acc-avaedit" onclick="nvAvatarOpen()" title="Đổi ảnh đại diện" aria-label="Đổi ảnh đại diện">${nvAvaInner(p)}<span class="ava-cam" aria-hidden="true">📷</span></button>
 <h1 class="acc-name">${p.name?esc(p.name):'<span class="muted">Chưa đặt tên</span>'}</h1><p class="acc-wholine">${esc(who||'Chưa cập nhật lớp')}</p><span class="acc-plan ${vip?'vip':''}">${vip?'★ VIP':'Gói Thường'}</span>
 <div class="acc-rank"><b>${r.name} · ${r.desc}</b><span class="acc-bar"><i style="width:${r.next?Math.round((all.length-r.from)/(r.next-r.from)*100):100}%"></i></span><small>${r.next?`${all.length}/${r.next} câu để lên cấp tiếp theo`:'Đã đạt cấp cao nhất'}</small></div>
 <div class="acc-mini"><div class="${today>=goal?'done':''}"><b>${today}/${goal}</b><span>câu hôm nay</span></div><div><b>${streak}</b><span>ngày liên tiếp</span></div><div><b>${week.length?Math.round(weekRight/week.length*100)+'%':'–'}</b><span>đúng 7 ngày</span></div><div><b>${all.length}</b><span>câu đã làm</span></div></div>
@@ -2820,75 +2820,6 @@ function exrRedoWrong(){const w=exrWrongIdx();if(!w.length||!ext||ext.exam.inlin
   const L=exrRead()[ext.code]||[],last=L[L.length-1],sec=last&&ext.__saved?last.sec:0;
   return base+`${byCh}<div class="exr-res-acts">${sec?`<span class="small muted">Thời gian làm: ${Math.floor(sec/60)} phút ${sec%60} giây</span>`:''}${w.length?`<button class="btn" type="button" onclick="extGo(${w[0]})">Xem lời giải câu sai</button>${ext.exam.inline?'':`<button class="btn primary" type="button" onclick="exrRedoWrong()">↺ Làm lại ${w.length} câu sai</button>`}`:'<span class="small">🎉 Em làm đúng hết các câu chấm tự động.</span>'}</div>`}}
 
-/* ===== Khám phá bài học: tìm kiếm, Làm tiếp, chọn lớp, cột chương, danh sách câu có bộ lọc (thuật toán cố định, không dùng AI) ===== */
-let expView={type:'',band:'',status:'',lesson:'',more:0};const EXP_PAGE=20;
-const EXP_STATUS=[{k:'',name:'Tất cả'},{k:'new',name:'Chưa làm'},{k:'ok',name:'Đã đúng'},{k:'bad',name:'Còn sai'}];
-/* kết quả lần làm gần nhất của từng câu */
-function expLast(){const m={};(typeof accRead==='function'?accRead():[]).forEach(a=>{m[String(a.id)]=a});return m}
-function expState(id,last){const a=last[String(id)];if(!a)return'new';return(+a.score||0)>=1?'ok':'bad'}
-function expLevelNow(){if(levels.includes(state.level))return state.level;const p=typeof accProfile==='function'?accProfile():{};return levels.includes(p.level)?p.level:levels[0]}
-/* danh sách câu của một chương, giữ chỉ số gốc để mở bằng pickProblem */
-function expItems(level,ch){
-  if(typeof getProblems==='function'){const keep={level:state.level,chapter:state.chapter};state.level=level;state.chapter=ch;let arr=[];try{arr=getProblems()}catch{}state.level=keep.level;state.chapter=keep.chapter;
-    return arr.map((p,i)=>{const q=(typeof accQuestion==='function'&&p.id&&accQuestion(p.id))||p;return{i,p,id:String(p.id||''),kind:q.html_document||q.question_type!=null?exbType(q):(p.options&&p.options.length?0:3),lv:p.id||q.difficulty!=null?exbLevel(q):1,lesson:+q.lesson_id||(/^\d{9}$/.test(String(q.id||''))?+String(q.id)[3]:0)}})}
-  const cc=String(classCodeFor(level)||''),cd=String(chapterCodeFor(level,ch)||'');
-  return questionBank.filter(q=>String(q.status||'published').toLowerCase()==='published'&&String(q.class_code||String(q.id).slice(0,2)).padStart(2,'0')===cc&&String(q.chapter_code||String(q.id).slice(2,4)).padStart(2,'0')===cd)
-    .map((q,i)=>({i,p:{id:q.id,type:q.lesson_name||'Bài tập',short:String(q.question||'').replace(/\s+/g,' ').slice(0,110),html_document:q.html_document},id:String(q.id),kind:exbType(q),lv:exbLevel(q),lesson:+q.lesson_id||(/^\d{9}$/.test(String(q.id||''))?+String(q.id)[3]:0)}))}
-function expOpenItem(i){if(typeof pickProblem==='function'&&typeof getProblems==='function'){pickProblem(i);return}const it=expItems(state.level,state.chapter)[i];if(it&&typeof openExerciseDocument==='function')openExerciseDocument(it.id)}
-function expShort(it){let s=it.p.short||it.p.question||'';if(typeof texToPlain==='function')s=texToPlain(s);s=String(s).replace(/^ĐỀ BÀI\s*-\s*ID:\s*\S+\s*/i,'').replace(/\s+/g,' ');return s.length>110?s.slice(0,110)+'…':s}
-function expBar(done,total){const w=total?Math.round(done/total*100):0;return `<span class="exp-bar" aria-hidden="true"><i style="width:${w}%"></i></span>`}
-/* câu "Làm tiếp": câu gần nhất chưa đúng, hoặc câu chưa làm kế tiếp trong chương vừa học */
-function expContinue(){const a=typeof accRead==='function'?accRead().filter(x=>x.src!=='de'&&x.src!=='on'):[];if(!a.length)return null;const lastA=a[a.length-1],last=expLast();
-  if((+lastA.score||0)<1&&accQuestion(lastA.id))return{id:String(lastA.id),why:'Câu lần trước chưa đúng',q:accQuestion(lastA.id)};
-  const inf=accInfo(lastA.id);const level=levels.find(l=>String(classCodeFor(l)||'')===inf.cc);if(!level)return null;
-  const ch=chapterCatalog.filter(c=>c.class_name===level).findIndex(c=>String(c.chapter_code).padStart(2,'0')===inf.ch);if(ch<0)return null;
-  const next=expItems(level,ch).find(it=>it.id&&expState(it.id,last)==='new');
-  return next?{id:next.id,why:'Câu tiếp theo trong '+accShortChapter(inf.chapter),q:accQuestion(next.id)||{id:next.id,question:next.p.short}}:null}
-function expPickLevel(i){state.level=levels[i];state.chapter=0;state.stage=1;expView.lesson='';if(!isTsaLevel(levels[i])&&typeof accSaveProfile==='function')accSaveProfile({level:levels[i]});render()}
-function expPickChapter(i){state.chapter=i;state.stage=2;expView.lesson='';expView.more=0;render();const p=document.getElementById('expPanel');if(p&&window.innerWidth<=900)p.scrollIntoView({block:'start'})}
-function expSet(k,v){expView[k]=v;expView.more=0;render()}
-/* nâng cao: chuyển bộ lọc sang mức kế tiếp mức em đã làm vững (≥ 80% đúng) */
-function expHarder(){const last=expLast(),items=expItems(state.level,state.chapter);let top=-1;
-  ACC_BANDS.forEach((b,k)=>{const L=items.filter(it=>accBand(it.lv)===k&&last[it.id]);if(L.length&&L.filter(it=>expState(it.id,last)==='ok').length/L.length>=.8)top=k});
-  const cur=expView.band===''?-1:+expView.band;expView.band=String(Math.min(ACC_BANDS.length-1,top<0&&cur<0?1:Math.max(top,cur)+1));expView.status='';render()}
-function expSearch(v){const box=document.getElementById('expRes');if(!box)return;const q=String(v||'').trim(),f=examFold(q);if(q.length<2){box.hidden=true;box.innerHTML='';return}
-  const out=[];
-  if(/^\d{8,9}$/.test(q)){const r=accQuestion(q);out.push(r?`<li><button type="button" onclick="accOpen('${esc(r.id)}')"><b>Mở câu ID ${esc(r.id)}</b><span>${esc(accTitle(r))}</span></button></li>`:`<li class="muted small">Không thấy câu có ID ${esc(q)}.</li>`)}
-  else{chapterCatalog.filter(c=>examFold(c.chapter_name).includes(f)).slice(0,6).forEach(c=>{const ch=chapterCatalog.filter(x=>x.class_name===c.class_name).indexOf(c);out.push(`<li><button type="button" onclick="state.level='${esc(c.class_name)}';expPickChapter(${ch})"><b>${esc(c.class_name)} · ${esc(c.chapter_name)}</b><span>Chương</span></button></li>`)});
-    questionBank.filter(r=>String(r.status||'published').toLowerCase()==='published'&&examFold((r.lesson_name||'')+' '+(typeof texToPlain==='function'?texToPlain(r.question||''):r.question||'')).includes(f)).slice(0,8).forEach(r=>out.push(`<li><button type="button" onclick="accOpen('${esc(r.id)}')"><b>${esc(accTitle(r))}</b><span>ID ${esc(r.id)}</span></button></li>`))}
-  box.innerHTML=out.length?out.join(''):'<li class="muted small">Không tìm thấy. Thử tên chương, dạng toán, hoặc nhập mã ID 9 số.</li>';box.hidden=false}
-function catalog(){
-  const level=expLevelNow();if(state.level!==level)state.level=level;
-  const rows=chapters[level]||[];state.chapter=+state.chapter||0;if(state.chapter>=rows.length)state.chapter=0;
-  const last=expLast(),nb=typeof nbRead==='function'?nbRead().q:{};
-  const chStats=rows.map((_,k)=>{const L=expItems(level,k).filter(it=>it.id);return{total:L.length,done:L.filter(it=>last[it.id]).length,wrong:L.filter(it=>nb[it.id]&&nb[it.id].status==='active'&&nb[it.id].wrong).length}});
-  const cont=expContinue();
-  const items=expItems(level,state.chapter);const lessonsHere=typeof lessonList==='function'?lessonList():[];
-  const show=items.filter(it=>(expView.type===''||it.kind===+expView.type)&&(expView.band===''||accBand(it.lv)===+expView.band)&&(expView.status===''||(it.id?expState(it.id,last):'new')===expView.status)&&(expView.lesson===''||it.lesson===+expView.lesson));
-  const st=chStats[state.chapter]||{total:0,done:0,wrong:0},right=items.filter(it=>it.id&&expState(it.id,last)==='ok').length;
-  const sel=(k,label,opts)=>`<label>${label} <select onchange="expSet('${k}',this.value)">${opts.map(o=>`<option value="${o.k}"${String(expView[k])===String(o.k)?' selected':''}>${esc(o.name)}</option>`).join('')}</select></label>`;
-  const icon={new:'<span class="exp-st new" title="Chưa làm">○</span>',ok:'<span class="exp-st ok" title="Đã đúng">✔</span>',bad:'<span class="exp-st bad" title="Còn sai">✘</span>'};
-  const menu=(it)=>{if(typeof toggleQuestionMenu!=='function'||!it.p._admin_key)return'';const key=esc(String(it.p._admin_key));return `<div class="question-actions"><button class="question-more" type="button" aria-label="Tùy chọn câu ${it.i+1}" aria-expanded="false" onclick="toggleQuestionMenu(event,'${key}')">⋮</button><div class="question-menu" id="question-menu-${key}" hidden><button type="button" onclick="editQuestionId('${key}')">✎ Sửa ID</button><button type="button" onclick="downloadQuestionPdf('${key}',false)">📄 Tải PDF – Đề bài</button><button type="button" onclick="downloadQuestionPdf('${key}',true)">📘 Tải PDF – Đề + lời giải</button><button type="button" onclick="downloadQuestion('${key}')">⬇ Tải file HTML</button><button type="button" class="danger" onclick="deleteQuestion('${key}')">🗑 Xóa câu</button></div></div>`};
-  const list=show.slice(0,EXP_PAGE*(1+(expView.more||0))).map(it=>{const s=it.id?expState(it.id,last):'new';const t=EXB_TYPES[it.kind]||EXB_TYPES[3];return `<li class="problem-row exp-row"><button class="item problem-open" type="button" onclick="expOpenItem(${it.i})">${icon[s]}<span class="exp-txt"><strong>Câu ${it.i+1} · ${esc(t.name)} · ${esc(ACC_BANDS[accBand(it.lv)].name)}${it.id?' · ID '+esc(it.id):''}</strong><span class="small muted">${esc(expShort(it))}</span></span></button>${menu(it)}</li>`}).join('');
-  const chIdx=state.chapter,hasNext=chIdx<rows.length-1;
-  return `<div class="exp"><div class="crumb"><a href="#" onclick="go('home');return false">Trang chủ</a> / Khám phá bài học</div>
-<section class="card exp-hero"><div class="exp-hero-main"><h1 class="sectiontitle">Khám phá bài học</h1><p class="muted">Chọn lớp, chọn chương rồi luyện từng câu. Câu sai tự vào Sổ tay để ôn lại.</p>
-<div class="exp-search"><label class="sr-only" for="expQ">Tìm bài</label><input id="expQ" type="search" autocomplete="off" placeholder="Tìm theo tên chương, dạng toán hoặc mã ID 9 số" oninput="expSearch(this.value)" onkeydown="if(event.key==='Escape'){this.value='';expSearch('')}"><ul class="exp-res" id="expRes" hidden></ul></div></div>
-${cont?`<div class="exp-cont"><span class="eyebrow">${esc(cont.why)}</span><b>${esc(accTitle(cont.q))}</b><button class="btn primary" type="button" onclick="accOpen('${esc(cont.id)}')">▶ Làm tiếp</button></div>`:`<div class="exp-cont empty"><span class="eyebrow">Bắt đầu</span><b>Chọn một chương bên dưới và làm câu đầu tiên.</b></div>`}</section>
-<div class="exp-levels" role="tablist" aria-label="Chọn lớp">${levels.map((l,i)=>`<button type="button" role="tab" aria-selected="${l===level}" onclick="expPickLevel(${i})">${esc(l)}</button>`).join('')}</div>
-<div class="exp-cols"><nav class="card exp-chapters" aria-label="Chương của ${esc(level)}"><div class="cardhead"><h3>Chương · ${esc(level)}</h3></div><ol>${rows.map((c,k)=>{const s=chStats[k];return `<li><button type="button" ${k===chIdx?'aria-current="true"':''} onclick="expPickChapter(${k})"><span class="exp-chname">${esc(c)}${s.wrong?`<i class="exp-dot" title="${s.wrong} câu sai chờ ôn"></i>`:''}</span><span class="exp-chmeta">${expBar(s.done,s.total)}<span class="small muted">${s.total?s.done+'/'+s.total+' câu':'Chưa có câu'}</span></span></button></li>`}).join('')||'<li class="muted small">Chưa có chương.</li>'}</ol></nav>
-<section class="card exp-panel" id="expPanel"><div class="cardbody">
-<div class="crumb">${esc(level)} › ${esc(rows[chIdx]||'')}${expView.lesson!==''&&lessonsHere[+expView.lesson-1]?' › '+esc(lessonsHere[+expView.lesson-1]):''}</div>
-<h2 class="exp-title">${esc(rows[chIdx]||'Chưa có chương')}</h2>
-<div class="exp-prog">${expBar(st.done,st.total)}<span class="small">Đã làm <b>${st.done}/${st.total}</b> câu · đúng <b>${right}</b>${st.wrong?` · <a href="#" onclick="go('notebook');return false">${st.wrong} câu sai chờ ôn</a>`:''}</span></div>
-<div class="exp-acts"><button class="btn" type="button" onclick="typeof openTheory==='function'?openTheory():alert('Chưa có video cho chương này.')">▶ Lý thuyết (video)</button><button class="btn" type="button" onclick="go('formulas')">∑ Công thức cốt lõi <span class="small muted">☆ lưu thành thẻ</span></button></div>
-<div class="nb-filters exp-filters">${items.some(it=>it.lesson)&&lessonsHere.length?sel('lesson','Bài',[{k:'',name:'Tất cả'},...lessonsHere.map((n,k)=>({k:k+1,name:n+' ('+items.filter(it=>it.lesson===k+1).length+')'}))]):''}${sel('type','Dạng',[{k:'',name:'Tất cả'},...EXB_TYPES.map(t=>({k:t.k,name:t.name}))])}${sel('band','Mức độ',[{k:'',name:'Tất cả'},...ACC_BANDS.map((b,k)=>({k,name:b.name}))])}${sel('status','Trạng thái',EXP_STATUS)}<span class="small muted">${show.length}/${items.length} câu</span></div>
-${items.length?(show.length?`<ol class="problem-list exp-list">${list}</ol>${show.length>EXP_PAGE*(1+(expView.more||0))?`<button class="btn exp-more" type="button" onclick="expView.more=(expView.more||0)+1;render()">Xem thêm ${Math.min(EXP_PAGE,show.length-EXP_PAGE*(1+(expView.more||0)))} câu</button>`:''}`:`<p class="muted">Không có câu khớp bộ lọc. <a href="#" onclick="expView.type='';expView.band='';expView.status='';expView.lesson='';render();return false">Bỏ lọc</a></p>`):`<div class="notice">Chương này chưa có câu trong ngân hàng. Thử chương khác hoặc vào <a href="#" onclick="go('exams');return false">Thư viện Đề thi</a>.</div>`}
-<div class="exp-foot">${items.length?`<button class="btn" type="button" onclick="expHarder()">⬆ Nâng cao</button>`:''}${hasNext?`<button class="btn" type="button" onclick="expPickChapter(${chIdx+1})">Chương tiếp theo →</button>`:''}</div>
-</div></section></div></div>`}
-/* trang Bài tập cũ dùng chung bố cục Khám phá */
-function problems(){return catalog()}
-
 /* ===== Cài đặt (nút bánh răng): thông tin cá nhân, tài khoản đăng nhập, giao diện và màu, trợ giảng, dữ liệu ===== */
 const ST_ROLES=['Học sinh','Giáo viên','Phụ huynh'];
 /* nút trên đầu trang sáng lên theo mục đang mở */
@@ -2903,7 +2834,7 @@ const ST_SECS=[{id:'display',ico:'🎨',name:'Giao diện và âm thanh',desc:'C
 function stSec(id){stView.sec=id;render();const c=$('stContent');if(c&&window.innerWidth<800)c.scrollIntoView({block:'start',behavior:'smooth'})}
 function settingsPage(){const p=accProfile(),sec=ST_SECS.find(x=>x.id===stView.sec)||ST_SECS[0];
   const nav=`<nav class="st-nav" aria-label="Mục cài đặt">${ST_SECS.map(x=>`<button type="button" ${x.id===sec.id?'aria-current="page"':''} onclick="stSec('${x.id}')"><span class="st-ico" aria-hidden="true">${x.ico}</span><span><b>${x.name}</b><small>${x.desc}</small></span></button>`).join('')}</nav>`;
-  const who=`<div class="st-who"><div class="acc-avatar" aria-hidden="true">${esc((p.name||'H').trim().charAt(0).toUpperCase())}</div><div><b>${esc(p.name||'Chưa đặt tên')}</b><small>${esc([p.role||'Học sinh',p.className||p.level,p.school].filter(Boolean).join(' · '))}</small></div></div>`;
+  const who=`<div class="st-who"><button type="button" class="acc-avatar acc-avaedit" onclick="nvAvatarOpen()" title="Đổi ảnh đại diện" aria-label="Đổi ảnh đại diện">${nvAvaInner(p)}<span class="ava-cam" aria-hidden="true">📷</span></button><div><b>${esc(p.name||'Chưa đặt tên')}</b><small>${esc([p.role||'Học sinh',p.className||p.level,p.school].filter(Boolean).join(' · '))}</small><button type="button" class="linkbtn" onclick="nvAvatarOpen()">📷 Đổi ảnh đại diện</button></div></div>`;
   return `<div class="st"><div class="crumb"><a href="#" onclick="go('home');return false">Trang chủ</a> / Cài đặt / ${sec.name}</div>
 <label class="st-pick"><span class="sr-only">Chọn mục cài đặt</span><select onchange="stSec(this.value)">${ST_SECS.map(x=>`<option value="${x.id}"${x.id===sec.id?' selected':''}>${x.ico} ${x.name}</option>`).join('')}</select></label>
 <div class="st-layout"><aside class="st-side">${who}${nav}</aside><div class="st-main" id="stContent"><h1 class="st-title">${sec.ico} ${sec.name}</h1>${stBody(sec.id,p)}</div></div></div>`}
@@ -4341,7 +4272,31 @@ body.nv-glass :is(.nv-modal,.nv-fab-pop,.nvq-pop,[role=dialog],[role=alertdialog
 .acc-radar .acc-dot{fill:#fff;stroke:var(--blue);stroke-width:3.2}
 .acc-radar .acc-lab{font:800 13.5px Inter,system-ui,sans-serif;fill:var(--navy)}
 .acc-radar .acc-val{font:900 16px Inter,system-ui,sans-serif;fill:var(--blue)}
-.acc-radarbox .acc-radar{max-width:540px!important;margin:0 auto}.acc-radarbox{grid-template-columns:minmax(0,1fr)!important}</style>
+.acc-radarbox .acc-radar{max-width:540px!important;margin:0 auto}.acc-radarbox{grid-template-columns:minmax(0,1fr)!important}
+
+/* ===== Ô trạng thái đầu mỗi câu trong danh sách Bài tập ===== */
+.nvx-item{grid-template-columns:30px 118px minmax(0,1fr) auto!important}
+.nvx-st{width:26px;height:26px;border-radius:8px;border:2px solid var(--line-strong,var(--line));background:var(--surface);display:grid;place-items:center;font:900 16px/1 Inter,system-ui,sans-serif;color:transparent}
+.nvx-st.ok{border-color:#16a34a;background:#dcfce7;color:#15803d}
+.nvx-st.bad{border-color:#dc2626;background:#fee2e2;color:#b91c1c}
+@media(max-width:700px){.nvx-item{grid-template-columns:30px 90px minmax(0,1fr)!important}}
+/* ===== Ảnh đại diện ===== */
+.acc-avatar img,.nv-auth img.nv-ava{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.acc-avaedit{border:0;padding:0;cursor:pointer;position:relative;overflow:visible;font:inherit}
+.acc-avaedit>img{position:absolute;inset:0}
+.ava-cam{position:absolute;right:-2px;bottom:-2px;width:26px;height:26px;border-radius:50%;background:var(--surface);border:1px solid var(--line-strong,var(--line));display:grid;place-items:center;font-size:13px;box-shadow:0 2px 6px #0003}
+.acc-avatar:not(.big) .ava-cam{width:20px;height:20px;font-size:10px}
+.nv-auth.in{overflow:hidden}
+.nvava{max-width:420px!important;text-align:center}
+.ava-stage{position:relative;margin:8px auto;overflow:hidden;border-radius:16px;background:#1f2937;touch-action:none;cursor:grab;user-select:none}
+.ava-stage.drag{cursor:grabbing}
+.ava-stage img{position:absolute;left:0;top:0;max-width:none;transform-origin:0 0;pointer-events:none}
+.ava-mask{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;box-shadow:0 0 0 999px rgba(15,23,42,.62);border:2px solid #fff;pointer-events:none}
+.ava-empty{position:absolute;inset:0;display:grid;place-items:center;color:#cbd5e1;font-weight:700}
+.ava-empty[hidden]{display:none}
+.ava-zoom{display:flex;align-items:center;gap:10px;justify-content:center;font-size:13px;color:var(--muted)}
+.ava-zoom input{flex:0 1 200px}
+.nvava .nvadd-imgs{justify-content:center}</style>
 <script id="toanai-nv">/* ===== Giao diện mới: Trang chủ, Giáo trình, Trang Bài, Bài tập, Khóa học, Đăng kí =====
    Nạp CUỐI CÙNG. Không đổi cách đọc file, ID, dạng câu, tài khoản: chỉ thay phần trình bày và điều hướng.
    Các trang mới nằm trong state.page: curriculum, lesson, exercises, courses, register (home được thay mới).
@@ -4391,7 +4346,7 @@ function nvAfter(){nvGlassInit();const pg=state.page;document.body.dataset.nvPag
 {const nav=ST_NAV;for(const k of Object.keys(nav))delete nav[k];
  Object.assign(nav,{navHome:['home'],navCurr:['curriculum','lesson','catalog','gradeGroup','formulas','problems','solve'],navExer:['exercises'],navExam:['exams','examBuilder','examTake','examUpload'],navCourse:['courses'],themeBtn:['settings','account','notebook','classroom']})}
 function nvAuthBtn(){const b=document.getElementById('authBtn');if(!b)return;const u=auUser();b.className='nv-auth'+(u?' in':'');
-  if(u){b.innerHTML=nvIco.user;b.title='Tài khoản: '+(u.name||u.email);b.setAttribute('aria-label','Tài khoản');b.onclick=()=>nvNav('account')}
+  if(u){const av=(typeof accProfile==='function'?accProfile().avatar:'');b.innerHTML=av?`<img class="nv-ava" src="${av}" alt="">`:nvIco.user;b.title='Tài khoản: '+(u.name||u.email);b.setAttribute('aria-label','Tài khoản');b.onclick=()=>nvNav('account')}
   else{b.textContent='Đăng kí';b.title='Tạo tài khoản';b.setAttribute('aria-label','Đăng kí');b.onclick=()=>nvNav('register')}}
 const _nvAuApply=auApply;auApply=function(){const r=_nvAuApply.apply(this,arguments);nvAuthBtn();return r};
 /* bấm mục trên thanh chính: ô tìm kiếm thu lại, chỉ còn kính lúp (bấm kính lúp để mở lại) */
@@ -4513,7 +4468,7 @@ function nvExercises(){const f=NV.ex,all=nvExFilter(),max=Math.max(1,Math.ceil(a
   let lessons=[];if(f.cc&&f.ch){const row=rows.find(r=>String(r.chapter_code).padStart(2,'0')===f.ch);if(row){const ci=chapterCatalog.filter(c=>c.class_name===row.class_name).indexOf(row);lessons=nvLessonsOf(row.class_name,ci)}}
   const opt=(v,t,cur)=>`<option value="${esc(v)}"${String(cur)===String(v)?' selected':''}>${esc(t)}</option>`;
   const lvN=['Lý thuyết','Nhận biết','Thông hiểu','Vận dụng','Thực tế cơ bản','Thực tế nâng cao','Vận dụng cao'],tyN=['Trắc nghiệm','Đúng/Sai','Trả lời ngắn','Tự luận','Chọn nhiều','Kéo thả','Điền nhiều chỗ'];
-  const any=f.cc||f.ch||f.ls||f.lv!==''||f.kind!==''||f.q;
+  const st=nvQStatus(),any=f.cc||f.ch||f.ls||f.lv!==''||f.kind!==''||f.q;
   return `<div class="nvx"><div class="nvx-bar"><form class="nvx-search" onsubmit="event.preventDefault();NV.ex.q=this.q.value;NV.ex.page=1;render()"><input name="q" value="${esc(f.q)}" placeholder="Tìm bài tập theo từ khóa hoặc ID" aria-label="Tìm bài tập"><button type="submit" aria-label="Tìm">🔍</button></form><button class="btn upload-open" type="button" onclick="openUploadModal()">＋ Cập nhật bài tập</button></div>
   <div class="nvx-filters"><select class="${f.cc?'on':''}" onchange="NV.ex.cc=this.value;NV.ex.ch='';NV.ex.ls='';NV.ex.page=1;render()" aria-label="Lớp">${opt('','Lớp: tất cả',f.cc)}${cls.map(l=>opt(ccode(l),l,f.cc)).join('')}</select>
   <select class="${f.ch?'on':''}" ${f.cc?'':'disabled'} onchange="NV.ex.ch=this.value;NV.ex.ls='';NV.ex.page=1;render()" aria-label="Chương">${opt('','Chương: tất cả',f.ch)}${rows.map(r=>opt(String(r.chapter_code).padStart(2,'0'),r.chapter_name,f.ch)).join('')}</select>
@@ -4521,7 +4476,7 @@ function nvExercises(){const f=NV.ex,all=nvExFilter(),max=Math.max(1,Math.ceil(a
   <select class="${f.lv!==''?'on':''}" onchange="NV.ex.lv=this.value;NV.ex.page=1;render()" aria-label="Mức độ khó">${opt('','Mức độ khó: tất cả',f.lv)}${lvN.map((n,i)=>opt(String(i),n,f.lv)).join('')}</select>
   <select class="${f.kind!==''?'on':''}" onchange="NV.ex.kind=this.value;NV.ex.page=1;render()" aria-label="Dạng bài">${opt('','Dạng bài: tất cả',f.kind)}${tyN.map((n,i)=>opt(String(i),n,f.kind)).join('')}</select>${any?'<button class="clear" type="button" onclick="NV.ex={q:\'\',cc:\'\',ch:\'\',ls:\'\',lv:\'\',kind:\'\',page:1};render()">Xóa lọc</button>':''}</div>
   <p class="nvx-note">${all.length} câu${any?' phù hợp':''}, sắp xếp theo bài mới đăng nhất. Bấm vào một câu để làm.</p>
-  <div class="nvx-list">${part.map(i=>`<div class="nvx-row"><button class="nvx-item" type="button" onclick="accOpen('${esc(i.id)}')"><span class="nid">${esc(i.id)}</span><span class="nst">${esc(srStem(i.q)||'(chưa có nội dung chữ)')}</span><span class="ntg">${esc(i.level)} · ${esc(tyN[i.kind]||'')}</span></button>${nvQMenuHtml(i.q._admin_key||i.id)}</div>`).join('')||'<div class="ls-empty">Không có câu nào phù hợp.</div>'}</div>
+  <div class="nvx-list">${part.map(i=>`<div class="nvx-row"><button class="nvx-item" type="button" onclick="accOpen('${esc(i.id)}')">${nvStBox(st[String(i.id)])}<span class="nid">${esc(i.id)}</span><span class="nst">${esc(srStem(i.q)||'(chưa có nội dung chữ)')}</span><span class="ntg">${esc(i.level)} · ${esc(tyN[i.kind]||'')}</span></button>${nvQMenuHtml(i.q._admin_key||i.id)}</div>`).join('')||'<div class="ls-empty">Không có câu nào phù hợp.</div>'}</div>
   ${max>1?`<div class="nvx-pager">${Array.from({length:max},(_,k)=>`<button type="button" class="${k+1===f.page?'on':''}" onclick="NV.ex.page=${k+1};render()">${k+1}</button>`).join('')}</div>`:''}</div>`}
 /* ---------- Khóa học ---------- */
 function nvCourseDetail(c){return `<section class="co-detail"><button type="button" class="co-collapse" onclick="nvCoToggle('${c.id}')">▲ Thu gọn</button><h2>${esc(c.name)}</h2><p class="goal">${esc(c.goal)}</p><div class="co-dg"><div class="co-box"><h4>Lịch học</h4><p>${esc(c.schedule)}</p><h4>Số tiết</h4><p>${esc(c.sessions)}</p></div><div class="co-box"><h4>Nội dung</h4><ul>${c.content.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div><div class="co-box" style="grid-column:1/-1"><h4>Lộ trình</h4><ul>${c.roadmap.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div></div><div class="co-foot"><button class="nv-btn gold" type="button" onclick="nvEnroll('${c.id}')">Đăng kí khóa học</button></div></section>`}
@@ -4793,5 +4748,38 @@ function nvHistGo(d){const fr=document.getElementById('toanai-exercise-frame');i
   const p=nvHist.pos+d;if(p<0||p>=nvHist.list.length)return;nvHist.pos=p;const o=nvHist.list[p];nvHist.busy=true;
   try{if(o.cu)NV.cu=JSON.parse(JSON.stringify(o.cu));if(o.ls)NV.ls=JSON.parse(JSON.stringify(o.ls));if(o.ex)NV.ex=JSON.parse(JSON.stringify(o.ex));state.page=o.page;render()}finally{nvHist.busy=false}nvSearchOpen=false;nvSearchApply();nvHistUi()}
 {const _afterH=nvAfter;nvAfter=function(){_afterH.apply(this,arguments);if(!nvHist.busy)nvHistRecord();nvHistUi()}}
+/* ---------- bỏ trang Khám phá/Công thức cũ: mọi đường dẫn về trang cũ được chuyển về trang mới ---------- */
+const NV_OLD_PAGES=['problems','catalog','gradeGroup','formulas'];
+function nvOldRemap(){if(state.page==='formulas'){state.page='curriculum';return}
+  const o=nvHist.list[nvHist.pos];if(o&&!NV_OLD_PAGES.includes(o.page)){if(o.cu)NV.cu=JSON.parse(JSON.stringify(o.cu));if(o.ls)NV.ls=JSON.parse(JSON.stringify(o.ls));if(o.ex)NV.ex=JSON.parse(JSON.stringify(o.ex));state.page=o.page}else state.page='exercises'}
+{const _r0=render;render=function(){if(NV_OLD_PAGES.includes(state.page)){nvHist.busy=true;try{nvOldRemap()}finally{setTimeout(()=>{nvHist.busy=false},0)}}return _r0.apply(this,arguments)}}
+/* ---------- trạng thái từng câu (✓ đúng · ✗ sai · trống chưa làm), lấy từ lần làm gần nhất ---------- */
+function nvQStatus(){const m={};try{accRead().forEach(a=>{if(!a||!a.id)return;if(+a.kind===3&&!a.graded)return;m[String(a.id)]=(+a.score||0)>=1?'ok':'bad'})}catch{}return m}
+function nvStBox(s){return `<span class="nvx-st ${s||''}" title="${s==='ok'?'Đã làm đúng':s==='bad'?'Đã làm sai':'Chưa làm'}" aria-label="${s==='ok'?'Đã làm đúng':s==='bad'?'Đã làm sai':'Chưa làm'}">${s==='ok'?'✓':s==='bad'?'✗':''}</span>`}
+/* ---------- ảnh đại diện: chọn ảnh, kéo để đặt vị trí, thanh trượt phóng to, cắt hình tròn ---------- */
+function nvAvaInner(p){return p&&p.avatar?`<img src="${esc(p.avatar)}" alt="">`:esc(((p&&p.name)||'H').trim().charAt(0).toUpperCase())}
+function nvAvatarOpen(){const S=300,D=250,OUT=256;const cur=accProfile().avatar||'';let img=null,sc=1,min=1,x=0,y=0,drag=null;
+  const w=nvOpenModal('nvAva',`<h3>📷 Ảnh đại diện</h3><p class="small muted">Chọn ảnh, kéo để chọn phần đẹp nhất, dùng thanh trượt (hoặc lăn chuột) để phóng to hay thu nhỏ. Phần trong vòng tròn sẽ là ảnh đại diện.</p>
+  <div class="ava-stage" id="avaStage" style="width:${S}px;height:${S}px"><img id="avaImg" alt="" draggable="false"><div class="ava-mask" style="width:${D}px;height:${D}px"></div><div class="ava-empty" id="avaEmpty">Chưa chọn ảnh</div></div>
+  <label class="ava-zoom">Thu nhỏ<input type="range" id="avaZoom" min="1" max="4" step="0.01" value="1" disabled>Phóng to</label>
+  <div class="nvadd-imgs"><label class="nv-btn line" style="padding:7px 16px">🖼 Chọn ảnh<input type="file" id="avaFile" accept="image/*" hidden></label>${cur?'<button type="button" class="nv-btn line" id="avaDel" style="padding:7px 16px">Xóa ảnh hiện tại</button>':''}</div>
+  <ul class="nvq-errs" id="avaErr"></ul><div class="nv-modal-btns"><button class="nv-btn gold" type="button" id="avaSave" disabled>Lưu ảnh đại diện</button><button class="nv-btn line" type="button" id="avaCancel">Hủy</button></div>`,'nvava');
+  const im=w.querySelector('#avaImg'),stage=w.querySelector('#avaStage'),zoom=w.querySelector('#avaZoom');
+  const clamp=()=>{const iw=img.naturalWidth*sc,ih=img.naturalHeight*sc,o=(S-D)/2;x=Math.min(o,Math.max(S-o-iw,x));y=Math.min(o,Math.max(S-o-ih,y))};
+  const apply=()=>{clamp();im.style.width=img.naturalWidth*sc+'px';im.style.height=img.naturalHeight*sc+'px';im.style.transform=`translate(${x}px,${y}px)`};
+  const setScale=(ns,cx,cy)=>{ns=Math.max(min,Math.min(min*4,ns));const k=ns/sc;x=cx-(cx-x)*k;y=cy-(cy-y)*k;sc=ns;zoom.value=String(sc/min);apply()};
+  const load=src=>{const t=new Image();t.onload=()=>{img=t;im.src=src;min=Math.max(D/t.naturalWidth,D/t.naturalHeight);sc=min;x=(S-t.naturalWidth*sc)/2;y=(S-t.naturalHeight*sc)/2;zoom.disabled=false;zoom.value='1';w.querySelector('#avaEmpty').hidden=true;w.querySelector('#avaSave').disabled=false;apply()};t.onerror=()=>{w.querySelector('#avaErr').innerHTML='<li>Không đọc được ảnh này. Hãy chọn ảnh PNG hoặc JPG.</li>'};t.src=src};
+  if(cur)load(cur);
+  w.querySelector('#avaFile').onchange=e=>{const f=e.target.files[0];if(!f)return;if(!/^image\//.test(f.type)){w.querySelector('#avaErr').innerHTML='<li>Hãy chọn một tệp ảnh.</li>';return}w.querySelector('#avaErr').innerHTML='';const r=new FileReader();r.onload=()=>load(r.result);r.readAsDataURL(f)};
+  zoom.oninput=()=>{if(img)setScale(min*zoom.value,S/2,S/2)};
+  stage.addEventListener('wheel',e=>{if(!img)return;e.preventDefault();const r=stage.getBoundingClientRect();setScale(sc*(e.deltaY<0?1.08:.93),e.clientX-r.left,e.clientY-r.top)},{passive:false});
+  stage.addEventListener('pointerdown',e=>{if(!img)return;drag={px:e.clientX,py:e.clientY,x,y};try{stage.setPointerCapture(e.pointerId)}catch{}stage.classList.add('drag')});
+  stage.addEventListener('pointermove',e=>{if(!drag)return;x=drag.x+(e.clientX-drag.px);y=drag.y+(e.clientY-drag.py);apply()});
+  const up=()=>{drag=null;stage.classList.remove('drag')};stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',up);
+  w.querySelector('#avaCancel').onclick=()=>w.close();
+  const del=w.querySelector('#avaDel');if(del)del.onclick=()=>{accSaveProfile({avatar:''});w.close();nvAvatarDone()};
+  w.querySelector('#avaSave').onclick=()=>{if(!img)return;const c=document.createElement('canvas');c.width=c.height=OUT;const g=c.getContext('2d'),o=(S-D)/2;g.imageSmoothingQuality='high';g.fillStyle='#fff';g.fillRect(0,0,OUT,OUT);
+    g.drawImage(img,(o-x)/sc,(o-y)/sc,D/sc,D/sc,0,0,OUT,OUT);let url=c.toDataURL('image/jpeg',.9);if(url.length>400000)url=c.toDataURL('image/jpeg',.7);accSaveProfile({avatar:url});w.close();nvAvatarDone()}}
+function nvAvatarDone(){nvAuthBtn();if(state.page==='account'||state.page==='settings')render()}
 render();</script>
 </body></html>

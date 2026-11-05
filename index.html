@@ -5007,10 +5007,93 @@ body.nv .cu-ls{padding:10px 12px 22px 8px;margin:-10px -12px -22px -8px}
 html[data-theme=dark] .nv-logo .logo{filter:drop-shadow(0 0 1.5px #ffffffe6) drop-shadow(0 3px 8px #0008)}
 .nv-foot .fb img{filter:drop-shadow(0 0 1.5px #fffffff0) drop-shadow(0 0 8px #ffffff40)}
 @media(prefers-reduced-motion:reduce){.nv-logo:hover .nv-brand{animation:none}.nv-logo:hover .logo{transform:none}}
+/* ===== Trang chủ: logo chìm dưới chữ Toán AI, khối lập phương ngang tên thương hiệu, gọn trong 1 màn hình ===== */
+.nv-title .nv-grad{position:relative;display:inline-block;isolation:isolate}
+.nv-title .nv-grad::before{content:"";position:absolute;z-index:-1;left:50%;top:52%;width:2.4em;aspect-ratio:260/232;transform:translate(-50%,-50%) rotate(-8deg);background:var(--ta-logo) center/contain no-repeat;opacity:.1;pointer-events:none}
+@media(min-width:981px){
+  .nv-hero{min-height:calc(100vh - 80px - 48px);align-items:stretch}
+  .nv-hero .nv-wrap{align-items:start;padding-top:clamp(14px,3vh,30px);padding-bottom:clamp(14px,3vh,30px)}
+  .nv-hero-l{gap:clamp(12px,2.2vh,22px)}
+  .nv-title{font-size:clamp(42px,min(5.4vw,9vh),78px)}
+  .nv-lead{margin-top:10px;font-size:16.5px;line-height:1.6}
+  .nv-cta-row{margin-top:clamp(10px,1.8vh,18px)}
+  .nv-scene{height:auto;aspect-ratio:auto;align-self:start;padding-top:0;margin-top:-6px;min-height:calc(var(--s, min(280px,34vw))*1.25)}
+  .nv-scene .nv-cube{--s:min(280px,30vw,40vh)}
+  .nv-gcard{padding:16px 18px}
+  .nv-gcard h3{margin-bottom:10px;font-size:17px}
+}
+@media(min-width:1100px){
+  .nv-courselist{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .nv-course{flex-direction:column;align-items:flex-start;gap:8px;padding:12px}
+  .nv-course:hover{transform:translateY(-4px)}
+  .nv-num{flex:0 0 auto;width:30px;height:30px;font-size:14px}
+}
+/* tiêu đề nhỏ của mục: Logo + Toán AI */
+.nv-kicker.ta-kick{display:inline-flex;align-items:center;gap:10px;color:var(--navy);font-size:20px;letter-spacing:0;text-transform:none}
+.nv-kicker.ta-kick img{width:36px;height:auto;filter:drop-shadow(0 2px 4px color-mix(in srgb,var(--navy) 25%,transparent))}
+.nv-kicker.ta-kick span{background:linear-gradient(90deg,var(--blue),#06b6d4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.nv-marquee i{min-width:1em;text-align:center}
+/* ===== Trang chủ · bộ màu Pastel học đường: mỗi khung một màu đại diện ===== */
+body.nv{--ta-c1:#E6F1FB;--ta-c1b:#B5D4F4;--ta-c1t:#0C447C;--ta-c1s:#185FA5;   /* Khóa học tiêu biểu: xanh dương */
+        --ta-c2:#EEEDFE;--ta-c2b:#CECBF6;--ta-c2t:#3C3489;--ta-c2s:#534AB7;   /* Về Toán AI: tím oải hương */
+        --ta-c3:#EAF3DE;--ta-c3b:#C0DD97;--ta-c3t:#27500A;--ta-c3s:#3B6D11}   /* Một cách học: xanh bạc hà */
+html[data-theme=dark] body.nv{--ta-c1:#0C447C;--ta-c1b:#185FA5;--ta-c1t:#E6F1FB;--ta-c1s:#B5D4F4;
+        --ta-c2:#3C3489;--ta-c2b:#534AB7;--ta-c2t:#EEEDFE;--ta-c2s:#CECBF6;
+        --ta-c3:#27500A;--ta-c3b:#3B6D11;--ta-c3t:#EAF3DE;--ta-c3s:#C0DD97}
+/* khung Khóa học tiêu biểu */
+body.nv .nv-gcard{background:color-mix(in srgb,var(--ta-c1) 82%,transparent);border-color:var(--ta-c1b)}
+body.nv .nv-gcard h3{color:var(--ta-c1t)}
+body.nv .nv-course{background:color-mix(in srgb,var(--surface) 70%,var(--ta-c1));border-color:var(--ta-c1b)}
+body.nv .nv-course b{color:var(--ta-c1t)}
+body.nv .nv-course span span{color:var(--ta-c1s)}
+body.nv .nv-num{background:var(--ta-c1s);color:#fff}
+html[data-theme=dark] body.nv .nv-num{background:#378ADD}
+/* khung Về Toán AI: đoạn giới thiệu + số liệu */
+body.nv .nv-quote{background:color-mix(in srgb,var(--ta-c2) 85%,transparent);border-color:var(--ta-c2b)}
+body.nv .nv-quote::before{color:color-mix(in srgb,var(--ta-c2s) 22%,transparent)}
+body.nv .nv-quote p{color:var(--ta-c2t)}
+body.nv .nv-stats{border-top-color:var(--ta-c2b)}
+body.nv .nv-stat{background:color-mix(in srgb,var(--ta-c2) 70%,transparent);border:1px solid var(--ta-c2b);border-radius:18px;padding:16px 10px}
+body.nv .nv-stat b{color:var(--ta-c2t)}
+body.nv .nv-stat span{color:var(--ta-c2s)}
+/* khung Một cách học giúp em biết mình sai ở đâu */
+body.nv .nv-fcard{background:color-mix(in srgb,var(--ta-c3) 85%,transparent);border:1px solid var(--ta-c3b)}
+body.nv .nv-fcard h3{color:var(--ta-c3t)}
+body.nv .nv-fcard p{color:var(--ta-c3s)}
+/* icon nét trắng trên nền màu đậm, rê chuột thì lắc nhẹ */
+body.nv .nv-ficon.ta-ico{width:66px;height:66px;border-radius:18px;background:var(--ta-c3s);color:#fff;font-size:0;box-shadow:0 10px 22px -10px color-mix(in srgb,var(--ta-c3s) 80%,transparent)}
+html[data-theme=dark] body.nv .nv-ficon.ta-ico{background:#639922}
+body.nv .nv-ficon.ta-ico svg{width:34px;height:34px}
+body.nv .nv-fcard:hover .nv-ficon.ta-ico{background:var(--ta-c3t);transform:none;animation:taWiggle .6s ease}
+html[data-theme=dark] body.nv .nv-fcard:hover .nv-ficon.ta-ico{background:#97C459;color:#173404}
+@keyframes taWiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg) scale(1.08)}50%{transform:rotate(8deg) scale(1.08)}75%{transform:rotate(-4deg) scale(1.04)}}
+@media(prefers-reduced-motion:reduce){body.nv .nv-fcard:hover .nv-ficon.ta-ico{animation:none}}
+/* chữ "Toán AI" ở trang chủ: đậm, tông xanh sâu hơn, có bóng nhẹ */
+body.nv .nv-title .nv-grad{font-weight:900;background:linear-gradient(90deg,var(--navy) 0%,var(--blue) 55%,#0891b2 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 3px 6px color-mix(in srgb,var(--navy) 22%,transparent));-webkit-text-stroke:1.5px color-mix(in srgb,var(--navy) 35%,transparent)}
+html[data-theme=dark] body.nv .nv-title .nv-grad{background:linear-gradient(90deg,#B5D4F4,#38bdf8 60%,#22d3ee);-webkit-background-clip:text;background-clip:text;-webkit-text-stroke:0}
+/* nút Quay lại ‹ trên thanh chính: dùng chung cho mọi trang, kể cả khi đang làm bài */
+body.ta-qopen .nv-menu #nvBack{background:var(--nvb);color:#fff;border-color:var(--nvb);box-shadow:0 6px 14px -6px color-mix(in srgb,var(--navy) 70%,transparent)}
+@media(max-width:760px){
+  .nv-top .nv-menu{display:flex;order:1;margin:0;width:auto;overflow:visible}
+  .nv-top .nv-menu>button:not(#nvBack){display:none}
+  .nv-top .nv-menu #nvBack{margin:0}
+  .nv-top .nv-menu #nvBack:disabled{display:none}
+}
+/* ===== Trang chủ: mỗi phần nội dung một dải màu nền riêng (cùng bộ Pastel học đường) để biết đang ở phần nào khi lướt ===== */
+body.nv[data-nv-page="home"] .nv-hero{background:linear-gradient(180deg,color-mix(in srgb,var(--ta-c1) 72%,transparent),color-mix(in srgb,var(--ta-c1) 55%,transparent))}
+body.nv[data-nv-page="home"] .nv-sec:not(.nv-feat){background:color-mix(in srgb,var(--ta-c2) 70%,transparent);border-top:4px solid var(--ta-c2b)}
+body.nv[data-nv-page="home"] .nv-sec.nv-feat{background:color-mix(in srgb,var(--ta-c3) 70%,transparent);border-top:4px solid var(--ta-c3b)}
+body.nv[data-nv-page="home"] .nv-sec:not(.nv-feat) .nv-h2{color:var(--ta-c2t)}
+body.nv[data-nv-page="home"] .nv-sec.nv-feat .nv-h2{color:var(--ta-c3t)}
+/* viền dưới thanh điều hướng đổi màu theo phần đang xem */
+body.nv[data-nv-page="home"] .nv-head{transition:border-color .3s,box-shadow .3s}
+body.nv[data-ta-sec="hero"] .nv-head{border-bottom:3px solid var(--ta-c1b)}
+body.nv[data-ta-sec="about"] .nv-head{border-bottom:3px solid var(--ta-c2b)}
+body.nv[data-ta-sec="feat"] .nv-head{border-bottom:3px solid var(--ta-c3b)}
 </style>
 <script id="toanai-dot2">/* ===== Giai đoạn 2 · Trang làm bài cùng giao diện web, điểm tự lực (sao), Học tiếp, Sổ tay trên thanh chính ===== */
 (function(){
-  var FRAME_CSS="/* ===== Giai đoạn 2 · Trang làm bài cùng kiểu với web: header sáng, khung bo mềm, nút viên thuốc, phông Be Vietnam Pro ===== */\nbody{font-family:\"Be Vietnam Pro\",system-ui,-apple-system,\"Segoe UI\",sans-serif;background:var(--bg)}\nbutton,input,select,textarea{font-family:inherit}\n:root{--ta-shadow:0 10px 28px -18px color-mix(in srgb,var(--navy) 55%,transparent)}\n\n/* header giống thanh điều hướng của web */\nheader{background:color-mix(in srgb,var(--surface) 94%,transparent);color:var(--ink);min-height:64px;border-bottom:1px solid var(--line);box-shadow:0 1px 8px #0f172a12;gap:4px;padding:0 10px;align-items:center}\nheader .logo{padding:6px 10px 6px 4px}\nheader .logo img{height:42px;background:transparent;padding:0;border-radius:0}\nheader .nv{color:var(--navy);border-left:0;font-size:15px;font-weight:700;padding:0 14px;min-height:40px;border-radius:12px;position:relative}\nheader .nv:hover{background:var(--soft)}\nheader .nv[aria-current=\"page\"]{background:transparent}\nheader .nv[aria-current=\"page\"]::after{content:\"\";position:absolute;left:14px;right:14px;bottom:3px;height:3px;border-radius:3px;background:var(--cta,#F59E0B)}\nheader .contact{border-left:0;justify-content:flex-end;color:color-mix(in srgb,var(--ink) 70%,var(--surface));font-size:14px;font-weight:600}\n.prog{height:4px;background:color-mix(in srgb,var(--line) 70%,transparent)}\n.prog i{background:var(--blue)}\n\n/* đề bài */\n.problem{border:1px solid var(--line);border-radius:18px;box-shadow:var(--ta-shadow);background:var(--surface)}\n.problem .badge{border-radius:999px;font-weight:700;letter-spacing:.04em;padding:3px 12px}\n.tf th{background:var(--soft)}\n.tf th,.tf td{border-color:var(--line)}\n.ratio{background:var(--surface);border-bottom:1px solid var(--line)}\n.ratio button,.fsz button,.play button{border:1px solid var(--line);border-radius:10px;background:var(--surface)}\n.ratio button:hover,.fsz button:hover,.play button:hover{border-color:var(--blue)}\n\n/* cột mục học tập bên trái */\n.side{background:var(--surface);border-right:1px solid var(--line);padding:12px 10px;gap:6px}\n.side button{border:1px solid var(--line);background:var(--surface);border-radius:12px;font-weight:600;transition:background .15s,border-color .15s}\n.side button:hover{background:var(--soft);border-color:color-mix(in srgb,var(--blue) 45%,var(--line))}\n.side button[aria-selected=\"true\"]{box-shadow:0 6px 16px -8px color-mix(in srgb,var(--blue) 70%,transparent)}\n.side .sep{color:color-mix(in srgb,var(--ink) 60%,var(--surface));font-weight:700}\n.reset{border:1px solid var(--blue);border-radius:999px}\n\n/* nội dung gợi ý, lời giải */\n.content{background:var(--bg)}\n.card{border:1px solid var(--line);border-radius:16px;box-shadow:var(--ta-shadow);background:var(--surface)}\n.opt{border:1px solid var(--line);border-radius:12px;background:var(--surface)}\n.fb.right,.fb.wrong{border-width:1px}\n.result-box{border:1px solid var(--line);border-radius:16px;box-shadow:var(--ta-shadow);background:var(--surface)}\n.final{border-radius:14px}\n.warn{border-width:1px}\n.hello h2{color:var(--navy)}\n.hello p{color:color-mix(in srgb,var(--ink) 78%,var(--bg))}\n\n/* nút: dạng viên thuốc như trên web */\n.btn{border-radius:999px;padding:0 22px}\n.btn.alt{border:1px solid var(--blue)}\n.nx-btns button{border-radius:999px!important;border-width:1px!important}\n.figure{background:var(--surface);border-left:1px solid var(--line)}\n.read{border:1px solid var(--line)}\n\n/* điểm tự lực (sao) sau khi nộp bài */\n.ta-stars{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0 2px;font-size:.95em;color:var(--ink)}\n.ta-stars b{font-size:1.25em;letter-spacing:2px;color:#F59E0B}\n.ta-stars b i{font-style:normal;color:color-mix(in srgb,var(--ink) 25%,var(--surface))}\n.ta-stars span{color:color-mix(in srgb,var(--ink) 75%,var(--surface))}\n\n@media (max-width:900px){\n  header{flex-wrap:nowrap;min-height:56px;padding:0 6px}\n  header .logo{padding:4px 6px 4px 2px}\n  header .logo img{height:34px}\n  header .nv{padding:0 10px;font-size:14px;min-height:40px}\n  header .contact{flex:1 1 auto;border-top:0;font-size:12px;padding:0 6px;min-height:0;justify-content:flex-end}\n  .side{border-bottom:1px solid var(--line);padding:8px}\n  .side button{border-radius:999px}\n  .figure{border-top:1px solid var(--line)}\n}\n@media (max-width:420px){header .contact{display:none}}\n\n/* ===== Trang làm bài nằm ngay dưới thanh điều hướng của web: nền thiên hà nhìn xuyên qua, khung kính mờ như các trang khác ===== */\nhtml,body{background:transparent!important}\n.app{height:100dvh}\nheader:not(.ta-ready){visibility:hidden}\nheader{background:transparent;border-bottom:0;box-shadow:none;min-height:46px;padding:4px 12px 0}\nheader .logo,header .contact,header .nv:not(.ta-back){display:none!important}\nheader .nv.ta-back{min-height:36px;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--surface) 72%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);font-size:14px}\nheader .nv.ta-back:hover{background:var(--soft)}\n.prog{margin:4px 12px 0;border-radius:4px}\n.problem,.card,.side,.ratio,.result-box,.figure,.opt,.read,.fsz button,.ratio button,.play button{background:color-mix(in srgb,var(--surface) 72%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1)}\n.content{background:transparent}\n.workspace{margin:0 12px 12px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:color-mix(in srgb,var(--surface) 38%,transparent)}\n.side{border-right:1px solid var(--line)}\n.ratio{margin:6px 12px 0;border:1px solid var(--line);border-radius:14px}\n.toanai-split-rows,.toanai-split-cols,.toanai-split-figure{background:transparent!important;border-color:transparent!important}\n@media (max-width:900px){.workspace{margin:0 8px 8px;border-radius:14px}.app{height:auto}}\n";
+  var FRAME_CSS="/* ===== Giai đoạn 2 · Trang làm bài cùng kiểu với web: header sáng, khung bo mềm, nút viên thuốc, phông Be Vietnam Pro ===== */\nbody{font-family:\"Be Vietnam Pro\",system-ui,-apple-system,\"Segoe UI\",sans-serif;background:var(--bg)}\nbutton,input,select,textarea{font-family:inherit}\n:root{--ta-shadow:0 10px 28px -18px color-mix(in srgb,var(--navy) 55%,transparent)}\n\n/* header giống thanh điều hướng của web */\nheader{background:color-mix(in srgb,var(--surface) 94%,transparent);color:var(--ink);min-height:64px;border-bottom:1px solid var(--line);box-shadow:0 1px 8px #0f172a12;gap:4px;padding:0 10px;align-items:center}\nheader .logo{padding:6px 10px 6px 4px}\nheader .logo img{height:42px;background:transparent;padding:0;border-radius:0}\nheader .nv{color:var(--navy);border-left:0;font-size:15px;font-weight:700;padding:0 14px;min-height:40px;border-radius:12px;position:relative}\nheader .nv:hover{background:var(--soft)}\nheader .nv[aria-current=\"page\"]{background:transparent}\nheader .nv[aria-current=\"page\"]::after{content:\"\";position:absolute;left:14px;right:14px;bottom:3px;height:3px;border-radius:3px;background:var(--cta,#F59E0B)}\nheader .contact{border-left:0;justify-content:flex-end;color:color-mix(in srgb,var(--ink) 70%,var(--surface));font-size:14px;font-weight:600}\n.prog{height:4px;background:color-mix(in srgb,var(--line) 70%,transparent)}\n.prog i{background:var(--blue)}\n\n/* đề bài */\n.problem{border:1px solid var(--line);border-radius:18px;box-shadow:var(--ta-shadow);background:var(--surface)}\n.problem .badge{border-radius:999px;font-weight:700;letter-spacing:.04em;padding:3px 12px}\n.tf th{background:var(--soft)}\n.tf th,.tf td{border-color:var(--line)}\n.ratio{background:var(--surface);border-bottom:1px solid var(--line)}\n.ratio button,.fsz button,.play button{border:1px solid var(--line);border-radius:10px;background:var(--surface)}\n.ratio button:hover,.fsz button:hover,.play button:hover{border-color:var(--blue)}\n\n/* cột mục học tập bên trái */\n.side{background:var(--surface);border-right:1px solid var(--line);padding:12px 10px;gap:6px}\n.side button{border:1px solid var(--line);background:var(--surface);border-radius:12px;font-weight:600;transition:background .15s,border-color .15s}\n.side button:hover{background:var(--soft);border-color:color-mix(in srgb,var(--blue) 45%,var(--line))}\n.side button[aria-selected=\"true\"]{box-shadow:0 6px 16px -8px color-mix(in srgb,var(--blue) 70%,transparent)}\n.side .sep{color:color-mix(in srgb,var(--ink) 60%,var(--surface));font-weight:700}\n.reset{border:1px solid var(--blue);border-radius:999px}\n\n/* nội dung gợi ý, lời giải */\n.content{background:var(--bg)}\n.card{border:1px solid var(--line);border-radius:16px;box-shadow:var(--ta-shadow);background:var(--surface)}\n.opt{border:1px solid var(--line);border-radius:12px;background:var(--surface)}\n.fb.right,.fb.wrong{border-width:1px}\n.result-box{border:1px solid var(--line);border-radius:16px;box-shadow:var(--ta-shadow);background:var(--surface)}\n.final{border-radius:14px}\n.warn{border-width:1px}\n.hello h2{color:var(--navy)}\n.hello p{color:color-mix(in srgb,var(--ink) 78%,var(--bg))}\n\n/* nút: dạng viên thuốc như trên web */\n.btn{border-radius:999px;padding:0 22px}\n.btn.alt{border:1px solid var(--blue)}\n.nx-btns button{border-radius:999px!important;border-width:1px!important}\n.figure{background:var(--surface);border-left:1px solid var(--line)}\n.read{border:1px solid var(--line)}\n\n/* điểm tự lực (sao) sau khi nộp bài */\n.ta-stars{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0 2px;font-size:.95em;color:var(--ink)}\n.ta-stars b{font-size:1.25em;letter-spacing:2px;color:#F59E0B}\n.ta-stars b i{font-style:normal;color:color-mix(in srgb,var(--ink) 25%,var(--surface))}\n.ta-stars span{color:color-mix(in srgb,var(--ink) 75%,var(--surface))}\n\n@media (max-width:900px){\n  header{flex-wrap:nowrap;min-height:56px;padding:0 6px}\n  header .logo{padding:4px 6px 4px 2px}\n  header .logo img{height:34px}\n  header .nv{padding:0 10px;font-size:14px;min-height:40px}\n  header .contact{flex:1 1 auto;border-top:0;font-size:12px;padding:0 6px;min-height:0;justify-content:flex-end}\n  .side{border-bottom:1px solid var(--line);padding:8px}\n  .side button{border-radius:999px}\n  .figure{border-top:1px solid var(--line)}\n}\n@media (max-width:420px){header .contact{display:none}}\n\n/* ===== Trang làm bài nằm ngay dưới thanh điều hướng của web: nền thiên hà nhìn xuyên qua, khung kính mờ như các trang khác ===== */\nhtml,body{background:transparent!important}\n.app{height:100dvh}\nheader:not(.ta-ready){visibility:hidden}\nheader{background:transparent;border-bottom:0;box-shadow:none;min-height:46px;padding:4px 12px 0}\nheader .logo,header .contact,header .nv:not(.ta-back){display:none!important}\nheader .nv.ta-back{min-height:36px;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--surface) 72%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);font-size:14px}\nheader .nv.ta-back:hover{background:var(--soft)}\n.prog{margin:4px 12px 0;border-radius:4px}\n.problem,.card,.side,.ratio,.result-box,.figure,.opt,.read,.fsz button,.ratio button,.play button{background:color-mix(in srgb,var(--surface) 72%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1)}\n.content{background:transparent}\n.workspace{margin:0 12px 12px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:color-mix(in srgb,var(--surface) 38%,transparent)}\n.side{border-right:1px solid var(--line)}\n.ratio{margin:6px 12px 0;border:1px solid var(--line);border-radius:14px}\n.toanai-split-rows,.toanai-split-cols,.toanai-split-figure{background:transparent!important;border-color:transparent!important}\n@media (max-width:900px){.workspace{margin:0 8px 8px;border-radius:14px}.app{height:auto}}\n/* nút Quay lại dùng chung nút ‹ trên thanh điều hướng chính của web: ẩn hẳn thanh đầu của khung bài */\nheader{display:none!important}\n.prog{margin-top:8px}\n";
   var FONT='@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap");';
   var STAR_KEY='toanai-stars-v1',LAST_KEY='toanai-last-v1';
   function lsGet(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
@@ -5103,7 +5186,35 @@ html[data-theme=dark] .nv-logo .logo{filter:drop-shadow(0 0 1.5px #ffffffe6) dro
   var _nav=window.nvNav;
   if(typeof _nav==='function')window.nvNav=function(){var f=frame();if(f)f.remove();return _nav.apply(this,arguments)};
 
-  function after2(){try{navNote();continueBtn();listStars();logoutBtn()}catch(err){console.error(err)}}
+  /* 9) Trang chủ: logo chìm dưới chữ Toán AI, dòng chạy "Tư duy tới tận cùng" + số điện thoại, tiêu đề nhỏ thành Logo + Toán AI */
+  function homeTweaks(){
+    if(state.page!=='home')return;
+    var logo=document.querySelector('.nv-logo img'),src=logo?logo.src:'';
+    if(src)document.documentElement.style.setProperty('--ta-logo','url("'+src+'")');
+    var I=typeof NV_INFO!=='undefined'?NV_INFO:{};
+    var mq=document.querySelector('.nv-marquee-in');
+    if(mq&&!mq._ta){mq._ta=1;var one='<span><i>∞</i>'+e(I.brand||'Toán AI')+' – Tư duy tới tận cùng</span><span><i>☎</i>'+e(I.hotline||'')+'</span>';mq.innerHTML=new Array(9).join(one)}
+    var ICONS=['<rect x="2.5" y="7" width="19" height="13.5" rx="2"/><path d="M8.5 7V5.2a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2V7"/><path d="M2.5 13h19"/><path d="M10 13v2.2h4V13"/>',
+      '<path d="M4 20.5V4l16.5 16.5Z"/><path d="M8 16.5V13.6l2.9 2.9Z"/><path d="M4 8h2M4 12h2M8 20.5v-2M12 20.5v-2"/>',
+      '<path d="M7 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7z"/><path d="M7 3v18M4 7.5h3M4 12h3M4 16.5h3"/><path d="m11 12 2.2 2.2L17 10"/>'];
+    document.querySelectorAll('.nv-fcard .nv-ficon').forEach(function(f,i){if(f.classList.contains('ta-ico')||!ICONS[i])return;f.classList.add('ta-ico');f.setAttribute('aria-hidden','true');f.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">'+ICONS[i]+'</svg>'});
+    document.querySelectorAll('.nv-kicker').forEach(function(k){if(k._ta)return;k._ta=1;k.classList.add('ta-kick');k.innerHTML=(src?'<img src="'+src+'" alt="">':'')+'<span>'+e(I.brand||'Toán AI')+'</span>'});
+  }
+
+  /* 10) Trang chủ: ghi lại phần nội dung đang xem để thanh điều hướng đổi màu viền theo */
+  var secObs=null;
+  function homeSections(){
+    if(state.page!=='home'){delete document.body.dataset.taSec;if(secObs){secObs.disconnect();secObs=null}return}
+    var hero=document.querySelector('.nv-hero'),secs=document.querySelectorAll('#app .nv-sec');if(!hero||hero._taObs)return;hero._taObs=1;
+    if(secObs)secObs.disconnect();
+    var map=new Map([[hero,'hero']]);secs.forEach(function(x){map.set(x,x.classList.contains('nv-feat')?'feat':'about')});
+    secObs=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting)document.body.dataset.taSec=map.get(en.target)})},{rootMargin:'-45% 0px -50% 0px'});
+    map.forEach(function(v,k){secObs.observe(k)});document.body.dataset.taSec='hero';
+  }
+  /* số câu trong ngân hàng ở trang chủ: cập nhật lại khi kho câu tải xong (tránh hiện 0) */
+  function statFix(){if(state.page!=='home'||typeof nvPublished!=='function')return;var b=document.querySelector('.nv-stat b');if(b){var n=nvPublished().length;if(n)b.textContent=n}}
+  if(typeof bankReady!=='undefined'&&bankReady&&typeof bankReady.then==='function')bankReady.then(function(){setTimeout(statFix,0)});
+  function after2(){try{navNote();continueBtn();listStars();logoutBtn();homeTweaks();homeSections();statFix()}catch(err){console.error(err)}}
   var _after=window.nvAfter;
   if(typeof _after==='function')window.nvAfter=function(){var r=_after.apply(this,arguments);after2();return r};
   window.addEventListener('toanai-attempt',function(){setTimeout(navNote,50)});

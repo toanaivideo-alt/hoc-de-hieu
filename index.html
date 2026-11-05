@@ -4310,7 +4310,15 @@ body.nv-glass :is(.nv-modal,.nv-fab-pop,.nvq-pop,[role=dialog],[role=alertdialog
 .nv-top #ghBtn:hover{background:var(--cta);color:var(--on-cta,#1f1300)}
 .nv-top #ghBtn.has-dot::after{content:"";position:absolute;right:3px;top:3px;width:11px;height:11px;border-radius:50%;background:#ef4444;border:2px solid var(--surface)}
 .nv-top #authBtn{order:9}
-.nv-top #themeBtn{order:10}</style>
+.nv-top #themeBtn{order:10}
+.nvaf{margin:6px 0 8px;display:grid;gap:8px}
+.nvaf-drop{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:2px dashed var(--line);border-radius:14px;padding:12px 14px}
+.nvaf-drop.on{border-color:var(--nvb)}
+.nvaf-sum{font-size:14px;line-height:1.9}
+.afc{display:inline-block;border-radius:999px;padding:2px 11px;font-weight:700;font-size:13px;background:rgba(127,127,127,.18);margin-right:4px}
+.afc.lt{background:rgba(59,130,246,.22)}.afc.ct{background:rgba(234,179,8,.25)}.afc.vd{background:rgba(34,197,94,.22)}.afc.q{background:rgba(168,85,247,.25)}
+.nvaf-q{display:flex;gap:8px;align-items:flex-start;font-size:14px;cursor:pointer}
+.nvaf[hidden]{display:none}</style>
 <script id="toanai-nv">/* ===== Giao diện mới: Trang chủ, Giáo trình, Trang Bài, Bài tập, Khóa học, Đăng kí =====
    Nạp CUỐI CÙNG. Không đổi cách đọc file, ID, dạng câu, tài khoản: chỉ thay phần trình bày và điều hướng.
    Các trang mới nằm trong state.page: curriculum, lesson, exercises, courses, register (home được thay mới).
@@ -4796,6 +4804,107 @@ function nvAvatarOpen(){const S=300,D=250,OUT=256;const cur=accProfile().avatar|
     g.drawImage(img,(o-x)/sc,(o-y)/sc,D/sc,D/sc,0,0,OUT,OUT);let url=c.toDataURL('image/jpeg',.9);if(url.length>400000)url=c.toDataURL('image/jpeg',.7);accSaveProfile({avatar:url});w.close();nvAvatarDone()}}
 function nvAvatarDone(){nvAuthBtn();if(state.page==='account'||state.page==='settings')render()}
 render();</script>
+<script id="toanai-nv3">/* ===== Đẩy cả một file Word / HTML / văn bản vào phần Lý thuyết của bài: web tự chia thành
+   Lý thuyết · Công thức (+ Chứng minh) · Ví dụ (+ Lời giải) · Câu bài tập luyện tập =====
+   Nạp sau js/41. Kết quả được chuẩn hóa về đúng cấu trúc của hộp "＋ Thêm nội dung" (Lý thuyết:/Công thức:/Chứng minh:/Ví dụ:/Lời giải:/Đáp án:),
+   nên giáo viên xem trước, sửa trực tiếp rồi mới lưu. Các câu hỏi (Câu 1, Câu 2…) được gom riêng để chuyển sang trang Cập nhật Bài tập. */
+const NV_AF_IMG=/\[\[IMG:(\d+)\]\]/g;
+/* đọc file → văn bản (công thức $…$, bảng "ô | ô", hình [[IMG:n]] trong tagState.pool) */
+async function nvFileText(file){const n=file.name.toLowerCase(),NL=String.fromCharCode(10);
+  if(/\.docx$/.test(n)){const r=await readDocxExam(await file.arrayBuffer(),tagState.pool);return String(r.text||'').replace(/[\u27E6\u27E7]/g,'')}
+  if(/\.html?$/.test(n)){const doc=new DOMParser().parseFromString(await file.text(),'text/html');doc.querySelectorAll('script,style,noscript,header,nav,footer,button,input,select').forEach(e=>e.remove());
+    doc.querySelectorAll('tr').forEach(tr=>{const cells=[...tr.children].filter(c=>/^t[dh]$/i.test(c.localName));if(cells.length>1){const t=cells.map(c=>c.textContent.replace(/\s+/g,' ').trim()).join(' | ');tr.textContent=t}});
+    return htmlToTagText(doc.body,{img:im=>{const s=im.getAttribute('src')||'';if(!/^data:image\//.test(s))return '';let i=tagState.pool.indexOf(s);if(i<0){tagState.pool.push(s);i=tagState.pool.length-1}return ' [[IMG:'+i+']] '}}).replace(/\u200b/g,'')}
+  if(/\.(txt|md)$/.test(n))return (await file.text()).replace(/\r\n?/g,NL);
+  if(/\.doc$/.test(n))throw new Error('Chưa đọc được tệp .doc cũ. Hãy lưu lại thành .docx rồi tải lên.');
+  throw new Error('Chỉ nhận tệp Word (.docx), HTML (.html), văn bản (.txt, .md).')}
+/* ---- nhận diện dòng đầu mục ---- */
+const AF_ORD='(?:(?:[IVXLC]{1,5}|[A-D]|\\d{1,2})\\s*[.)\\-:]\\s*)?';
+const AF_RE={
+  vd:new RegExp('^\\s*'+AF_ORD+'(ví dụ|vi du|vd|bài tập mẫu|bài mẫu|bt mẫu)\\s*\\d*\\s*[:.\\-)]?\\s*(.*)$','i'),
+  ct:new RegExp('^\\s*'+AF_ORD+'(công thức|cong thuc)\\s*(?:[:.\\-–]\\s*)?$|^\\s*'+AF_ORD+'(công thức|cong thuc)\\s*[:.\\-–]\\s*(.*)$','i'),
+  lt:new RegExp('^\\s*'+AF_ORD+'(tóm tắt lý thuyết|tom tat ly thuyet|lý thuyết|ly thuyet|kiến thức cần nhớ|kiến thức trọng tâm|định nghĩa|dinh nghia|định lí|định lý|dinh li|tính chất|tinh chat|nhận xét|nhan xet|chú ý|chu y|khái niệm|khai niem|quy tắc|nhắc lại)\\s*(.*)$','i'),
+  bt:new RegExp('^\\s*'+AF_ORD+'(bài tập|bai tap|luyện tập|luyen tap|bài tập (?:vận dụng|tự luyện|trắc nghiệm|tự luận|rèn luyện)|câu hỏi (?:vận dụng|ôn tập))\\s*[:.]?\\s*$','i'),
+  proof:/^\s*(chứng minh|chung minh|c\/m)\s*[:.]?\s*(.*)$/i,
+  sol:/^\s*(lời giải|loi giai|hướng dẫn giải|hướng dẫn|hdg|bài giải)\s*[:.]?\s*(.*)$/i,
+  solG:/^\s*giải\s*[:.]?\s*$/i,
+  ans:/^\s*(đáp án|dap an|đáp số|kết quả)\s*[:.]\s*(.*)$/i};
+const AF_NAMED=['tóm tắt lý thuyết','lý thuyết','kiến thức cần nhớ','kiến thức trọng tâm'];
+function afIsHeadText(rest){return rest.length<=110}   /* đầu mục thật thường ngắn; câu văn dài thì coi là nội dung */
+/* ---- nhận diện cả văn bản và dựng văn bản đã có cấu trúc ---- */
+function nvLsAutoStructure(raw){const NL=String.fromCharCode(10),lines=String(raw||'').replace(/\r\n?/g,NL).split(NL).map(l=>l.replace(/\u200b/g,'').replace(/[ \t\u00a0]+/g,' ').trim()).filter(l=>l!==''&&!/^\s*phần\s+[ivx\d]+\s*[.:\-]/i.test(l));
+  const blocks=[];let cur=null,mode='lt';
+  const push=()=>{if(cur&&cur.k==='ct'&&!cur.body.join('').trim()&&!cur.proof.join('').trim())cur=null;if(cur&&(cur.k==='bt'?cur.body.some(x=>x.trim()):(cur.head||cur.body.join('').trim()||cur.proof.join('').trim())))blocks.push(cur);cur=null};
+  const mk=(k,head)=>({k,head:head||'',body:[],proof:[],ans:[],sec:'body'});
+  for(const ln of lines){
+    const isQ=readCauLine(ln);
+    if(isQ){push();cur=mk('bt','');mode='bt';cur.body.push(ln);cur.sec='body';continue}
+    if(cur&&cur.k==='bt'){
+      const headNow=AF_RE.vd.test(ln)||AF_RE.ct.test(ln)||AF_RE.lt.test(ln);
+      if(!(headNow&&afIsHeadText(ln))){if(/^\s*(bài|bt)\s*\d+\s*[.:)]/i.test(ln)&&mode==='bt'){push();cur=mk('bt','');}cur.body.push(ln);continue}}
+    let m;
+    if(!cur&&!blocks.length&&/^\s*(bài|chương|chủ đề)\s*\d+/i.test(ln)&&ln.length<90)continue;
+    if(AF_RE.bt.test(ln)){push();mode='bt';continue}
+    if((m=AF_RE.vd.exec(ln))&&afIsHeadText(ln)){push();cur=mk('vd','');cur.body.push(m[2]||'');mode='vd';continue}
+    if((m=AF_RE.ct.exec(ln))&&afIsHeadText(m[3]||'')){m[2]=m[3];push();cur=mk('ct',(m[2]||'').replace(/^[:.\-–]\s*/,'').trim());mode='ct';continue}
+    if((m=AF_RE.lt.exec(ln))&&afIsHeadText(m[2]||'')){push();const kw=m[1].trim(),rest=(m[2]||'').replace(/^[:.\-–]\s*/,'').trim(),generic=AF_NAMED.includes(kw.toLowerCase());
+      cur=mk('lt',generic?rest:(kw.charAt(0).toUpperCase()+kw.slice(1)));if(!generic&&rest)cur.body.push(rest);mode='lt';continue}
+    if(cur&&(m=AF_RE.proof.exec(ln))){if(cur.k==='lt')cur.k='ct';cur.sec='proof';if(m[2])cur.proof.push(m[2]);continue}
+    if(cur&&(cur.k==='vd'||cur.k==='ct'||cur.k==='lt')&&((m=AF_RE.sol.exec(ln))||AF_RE.solG.test(ln))){if(cur.k==='lt'){cur.k='ct'}cur.sec='proof';if(m&&m[2])cur.proof.push(m[2]);continue}
+    if(cur&&cur.k==='vd'&&(m=AF_RE.ans.exec(ln))){cur.sec='ans';if(m[2])cur.ans.push(m[2]);continue}
+    if(!cur)cur=mk(mode==='ct'?'ct':mode==='vd'?'vd':mode==='bt'?'bt':'lt','');
+    (cur.sec==='proof'?cur.proof:cur.sec==='ans'?cur.ans:cur.body).push(ln)}
+  push();
+  const imgs={},conv=t=>String(t||'').replace(NV_AF_IMG,(m,i)=>{const nm='f'+i+'.png';if(tagState.pool[+i])imgs[nm]=tagState.pool[+i];return '[Hình: '+nm+']'});
+  const out=[],qs=[],st={lt:0,ct:0,vd:0,q:0};let qn=0;
+  blocks.forEach(b=>{
+    if(b.k==='bt'){const text=b.body.join(NL).trim();if(!text)return;let t=text;
+      if(!readCauLine(t.split(NL)[0])){qn++;t=t.replace(/^\s*(?:bài|bt)\s*\d*\s*[.:)]?\s*/i,'');t='Câu '+qn+': '+t}
+      qs.push(t);st.q++;return}
+    const body=conv(b.body.join(NL)).trim(),proof=conv(b.proof.join(NL)).trim(),ans=conv(b.ans.join(NL)).trim(),head=conv(b.head).trim();
+    if(b.k==='lt'){if(!head&&!body)return;out.push('Lý thuyết: '+head+(body?NL+body:''));st.lt++}
+    else if(b.k==='ct'){if(!head&&!body)return;out.push('Công thức: '+head+(body?NL+body:'')+(proof?NL+'Chứng minh:'+NL+proof:''));st.ct++}
+    else{if(!body)return;const first=body.split(NL),h=first.shift();out.push('Ví dụ: '+h+(first.length?NL+first.join(NL):'')+(proof?NL+'Lời giải:'+NL+proof:'')+(ans?NL+'Đáp án: '+ans.replace(NL,' '):''));st.vd++}});
+  /* câu hỏi: đổi số thứ tự cho liên tục nếu có "Câu n" trùng nhau */
+  return{text:out.join(NL+NL),qText:qs.join(NL+NL),stats:st,imgs}}
+/* ---- giao diện: chế độ "Từ file" trong hộp Thêm nội dung ---- */
+function nvAfPane(w,ta,prev){let p=w.querySelector('#nvAfPane');
+  if(!p){p=document.createElement('div');p.id='nvAfPane';p.className='nvaf';
+    p.innerHTML=`<p class="small">Chọn một file <b>Word (.docx)</b>, <b>HTML</b> hoặc <b>.txt</b> chứa cả bài. Web tự chia thành <b>Lý thuyết</b>, <b>Công thức</b> (kèm chứng minh), <b>Ví dụ</b> (kèm lời giải) và gom các <b>câu bài tập</b> riêng. Kết quả hiện trong khung bên dưới để thầy cô xem và sửa trước khi lưu.</p>
+    <div class="nvaf-drop" id="nvAfDrop"><label class="nv-btn gold" style="padding:8px 18px">📄 Chọn file<input type="file" id="nvAfFile" accept=".docx,.html,.htm,.txt,.md" hidden></label><span class="small muted" id="nvAfName">Hoặc kéo thả file vào đây.</span></div>
+    <div class="nvaf-sum" id="nvAfSum" hidden></div>
+    <label class="nvaf-q" id="nvAfQRow" hidden><input type="checkbox" id="nvAfQ" checked> <span id="nvAfQTxt"></span></label>
+    <p class="small muted">Mẹo: file nên có các đầu mục “Lý thuyết”, “Định nghĩa”, “Công thức”, “Chứng minh”, “Ví dụ 1”, “Lời giải”, “Đáp án”, “Bài tập”, “Câu 1:”. Chưa có đầu mục thì cả đoạn được xếp vào Lý thuyết và có thể đổi tay trong khung bên dưới.</p>`;
+    w.querySelector('#nvAddText').before(p);
+    const go=async f=>{if(!f)return;const sum=p.querySelector('#nvAfSum');p.querySelector('#nvAfName').textContent='Đang đọc '+f.name+'…';
+      try{const raw=await nvFileText(f),r=nvLsAutoStructure(raw);nvAddImgs=Object.assign(nvAddImgs,r.imgs);ta.value=r.text;w._qText=r.qText;
+        p.querySelector('#nvAfName').textContent=f.name;const s=r.stats;
+        sum.hidden=false;sum.innerHTML=`<b>Đã nhận diện:</b> <span class="afc lt">${s.lt} lý thuyết</span> <span class="afc ct">${s.ct} công thức</span> <span class="afc vd">${s.vd} ví dụ</span> <span class="afc q">${s.q} câu bài tập</span>${Object.keys(r.imgs).length?` <span class="afc">${Object.keys(r.imgs).length} hình</span>`:''}${!r.text&&!r.qText?'<br>Không đọc được nội dung nào từ file này.':''}`;
+        const row=p.querySelector('#nvAfQRow');row.hidden=!s.q;p.querySelector('#nvAfQTxt').textContent='Chuyển '+s.q+' câu bài tập sang “Bài tập luyện tập” của bài này (mở trang Cập nhật Bài tập, đã điền sẵn lớp, chương, bài).';
+        const lst=w.querySelector('#nvAddImgList');if(lst)lst.textContent='Hình trong file: '+(Object.keys(nvAddImgs).join(', ')||'không có');prev()}
+      catch(e){p.querySelector('#nvAfName').textContent='Không đọc được: '+(e.message||e)}};
+    p.querySelector('#nvAfFile').onchange=e=>go(e.target.files[0]);
+    const dz=p.querySelector('#nvAfDrop');['dragenter','dragover'].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add('on')}));['dragleave','drop'].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove('on')}));dz.addEventListener('drop',e=>go(e.dataTransfer.files[0]))}
+  p.hidden=false;ta.value='';w._qText='';const sm=p.querySelector('#nvAfSum');if(sm)sm.hidden=true}
+function nvAfHide(w){const p=w.querySelector('#nvAfPane');if(p)p.hidden=true;w._qText=''}
+/* sau khi lưu lý thuyết: chuyển các câu bài tập sang trang Cập nhật Bài tập (điền sẵn lớp, chương, bài) */
+function nvAfSendQuestions(q){const L=NV.ls;NV.upCtx={level:L.level,ci:L.ci,n:L.n,key:nvLKey(),returnTo:'lesson'};openUploadModal();
+  setTimeout(()=>{const set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v};set('tagClass',L.level);if(typeof fillTagChapters==='function')fillTagChapters();const row=nvChapRows(L.level)[L.ci];set('tagChapter',tagChapterNum(row));if(typeof knttFillTagLesson==='function')knttFillTagLesson();set('tagLesson',L.n);
+    set('tagText',q);if(typeof parseTagUpload==='function')parseTagUpload()},150)}
+/* gắn nút thứ 4 "Từ file" vào hộp Thêm nội dung */
+{const _add=nvLtAdd;nvLtAdd=function(){_add.apply(this,arguments);const w=document.getElementById('nvAdd');if(!w)return;
+  const kinds=w.querySelector('.nvadd-kinds'),ta=w.querySelector('#nvAddText'),help=w.querySelector('#nvAddHelp'),prevBox=w.querySelector('#nvAddPrev');
+  const b=document.createElement('button');b.type='button';b.dataset.k='file';b.textContent='📄 Từ file';kinds.append(b);
+  const prev=()=>{const r=nvLsParse(ta.value,nvAddImgs);prevBox.innerHTML=r.items.map(i=>nvLtCard(i,false,true)).join('');w.querySelector('#nvAddErrs').innerHTML=r.errors.map(e=>`<li>${esc(e)}</li>`).join('');if(typeof fmTypeset==='function')fmTypeset(prevBox)};
+  /* các nút cũ chạy trước (onclick riêng): khi bấm nút khác thì ẩn khung file */
+  kinds.querySelectorAll('button:not([data-k=file])').forEach(x=>{const o=x.onclick;x.onclick=function(){nvAfHide(w);b.classList.remove('on');return o&&o.apply(this,arguments)}});
+  b.onclick=()=>{kinds.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));help.textContent='Từ file: web tự chia lý thuyết, công thức, ví dụ. Xem và sửa kết quả bên dưới rồi bấm Lưu.';nvAfPane(w,ta,prev);prev()};
+  /* lưu: nếu có câu bài tập và đã tích chọn thì chuyển sang trang Cập nhật Bài tập */
+  const sv=w.querySelector('#nvAddSave'),o=sv.onclick;sv.onclick=function(){const q=w._qText,chk=w.querySelector('#nvAfQ'),send=q&&chk&&chk.checked&&!w.querySelector('#nvAfPane').hidden;
+    if(send&&!ta.value.trim()){w.close();nvAfSendQuestions(q);return}
+    const had=nvLsGet(nvLKey()).items.length;o.apply(this,arguments);
+    if(send&&!document.getElementById('nvAdd'))nvAfSendQuestions(q);
+    else if(send&&nvLsGet(nvLKey()).items.length===had){/* chưa lưu được: giữ nguyên hộp */}}}}</script>
 <style id="toanai-dot1-css">/* ===== Đợt 1 · Giao diện: phông chữ, màu, độ tương phản, khối lập phương rõ nét, header điện thoại, nút gọi ===== */
 body.nv{--ta-font:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;font-family:var(--ta-font)}
 body.nv :where(button,input,select,textarea,h1,h2,h3,h4,h5,p,a,span,b,small,li,label,div):not(.mf):not(.mf *):not(mjx-container):not(mjx-container *){font-family:var(--ta-font)}
